@@ -1,6 +1,29 @@
 <?php
 
 require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/../app/Config/bootstrap.php';
+
+//use all the required models to create product
+use App\Entity\Currency;
+use App\Entity\Price;
+
+
+//lets add one product to the database
+$currencyUSD = new Currency();
+$currencyUSD->setSymbol('$');
+$currencyUSD->setLabel('USD');
+
+$price = new Price();
+$price->setAmount(100.00);
+$price->setCurrency($currencyUSD);
+
+$currencyUSD->addPrice($price);
+
+$entityManager->persist($currencyUSD);
+$entityManager->persist($price);
+
+// Flush changes to the database
+$entityManager->flush();
 
 $dispatcher = FastRoute\simpleDispatcher(function(FastRoute\RouteCollector $r) {
     $r->post('/graphql', [App\Controller\GraphQL::class, 'handle']);
@@ -14,10 +37,14 @@ $routeInfo = $dispatcher->dispatch(
 switch ($routeInfo[0]) {
     case FastRoute\Dispatcher::NOT_FOUND:
         // ... 404 Not Found
+        header("HTTP/1.0 404 zajebal");
+        echo "Deez nuts";
         break;
     case FastRoute\Dispatcher::METHOD_NOT_ALLOWED:
         $allowedMethods = $routeInfo[1];
         // ... 405 Method Not Allowed
+        header("HTTP/1.0 405 Method Not Allowed");
+        echo "405 Method Not Allowed";
         break;
     case FastRoute\Dispatcher::FOUND:
         $handler = $routeInfo[1];
