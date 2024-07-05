@@ -6,8 +6,10 @@ use Doctrine\DBAL\DriverManager;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\ORMSetup;
 
-//Path to the entity's
-$paths = ['/home/nazis/Desktop/scandi-web/fullstack-test-starter/app/src/Entity'];
+//Path to the metadata config. Since there are supper classes let's include tehir directory
+$paths = ['/home/nazis/Desktop/scandi-web/fullstack-test-starter/app/src/Entity',
+          '/home/nazis/Desktop/scandi-web/fullstack-test-starter/app/src/Models'];
+
 $isDevMode = true;
 
 //get parameters

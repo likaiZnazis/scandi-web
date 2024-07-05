@@ -1,67 +1,53 @@
 <?php
 namespace App\Models;
 
+use App\Entity\ClothProduct;
+use App\Entity\TechProduct;
+use App\Entity\Price;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 
-/**
- * @Entity
- * @InheritanceType("SINGLE_TABLE")
- * @DiscriminatorColumn(name="discr", type="string")
- * @DiscriminatorMap({"cloth_product" = "ClothProduct", "tech_product" = "TechProduct"})
- */
+#[ORM\Entity]
+#[ORM\Table(name: 'product')]
+#[ORM\InheritanceType("SINGLE_TABLE")]
+#[ORM\DiscriminatorColumn(name: 'discr', type: 'string')]
+#[ORM\DiscriminatorMap(['cloth_product' => ClothProduct::class, 'tech_product' => TechProduct::class])]
 class Product
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue]
     protected $product_id;
 
-    /**
-     * @ORM\Column(type="string")
-     */
+    #[ORM\Column(type: 'string')]
     protected $id;
 
-    /**
-     * @ORM\Column(type="string")
-     */
+    #[ORM\Column(type: 'string')]
     protected $name;
 
-    //create getters and setters
-    /**
-     * @ORM\Column(type="boolean")
-     */
+    #[ORM\Column(type: 'boolean')]
     protected $in_stock;
 
-    /**
-     * @ORM\Column(type="json")
-     */
+    #[ORM\Column(type: 'json')]
     protected $gallery;
 
-    /**
-     * @ORM\Column(type="text")
-     */
+    #[ORM\Column(type: 'text')]
     protected $description;
 
-    /**
-     * @ORM\Column(type="string", nullable=true)
-     */
+    #[ORM\Column(type: 'string', nullable: true)]
     protected $brand;
 
-    /** @var Collection<int, Price> */
-    /**
-     * @ORM\OneToMany(targetEntity="Price", mappedBy="product", cascade={"persist", "remove"})
-     */
-    protected Collection $prices;
+    #[ORM\OneToMany(targetEntity: Price::class, mappedBy: 'product')]
+    protected Collection $prod_prices;
+
+    #[ORM\OneToMany(targetEntity: Attribute::class, mappedBy: 'product')]
+    protected Collection $attributes;
 
     public function __construct()
     {
-        $this->prices = new ArrayCollection();
+        $this->prod_prices = new ArrayCollection();
     }
-
     // Getters and setters...
 
     public function getProductId(): int
@@ -120,23 +106,23 @@ class Product
         $this->brand = $brand;
     }
 
-    public function getPrices(): Collection
+    public function getprod_prices(): Collection
     {
-        return $this->prices;
+        return $this->prod_prices;
     }
 
     public function addPrice(Price $price): void
     {
-        if (!$this->prices->contains($price)) {
-            $this->prices[] = $price;
+        if (!$this->prod_prices->contains($price)) {
+            $this->prod_prices[] = $price;
             $price->setProduct($this);
         }
     }
 
     public function removePrice(Price $price): void
     {
-        if ($this->prices->contains($price)) {
-            $this->prices->removeElement($price);
+        if ($this->prod_prices->contains($price)) {
+            $this->prod_prices->removeElement($price);
             if ($price->getProduct() === $this) {
                 $price->setProduct(null);
             }

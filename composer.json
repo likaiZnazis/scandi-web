@@ -3,7 +3,8 @@
     "type": "project",
     "autoload": {
         "psr-4": {
-            "App\\Entity\\": "app/src/Entity/"
+            "App\\Entity\\": "app/src/Entity/",
+            "App\\Models\\": "app/src/Models/"
         },
         "psr-0": {
             "": "src/"

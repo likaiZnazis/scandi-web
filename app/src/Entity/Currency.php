@@ -8,9 +8,8 @@ use Doctrine\Common\Collections\Collection;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'currency')]
-class Currency{
-
-    //Proper
+class Currency
+{
     #[ORM\Id]
     #[ORM\Column(type: 'integer')]
     #[ORM\GeneratedValue]
@@ -22,18 +21,17 @@ class Currency{
     #[ORM\Column(type: 'string')]
     private string $symbol;
 
-    //There can be many prices to the same currency
     /** @var Collection<int, Price> */
-    #[ORM\OneToMany(targetEntity: Price::class, mappedBy: "currency")]
+    #[ORM\OneToMany(targetEntity: Price::class, mappedBy: 'currency')]
     private Collection $prices;
 
-    //Constructor
     public function __construct()
     {
         $this->prices = new ArrayCollection();
     }
 
-    //Getters and setters
+    // Getters and setters...
+
     public function getCurrencyId(): int
     {
         return $this->currency_id;
@@ -44,11 +42,9 @@ class Currency{
         return $this->label;
     }
 
-    public function setLabel(string $label): self
+    public function setLabel(string $label): void
     {
         $this->label = $label;
-
-        return $this;
     }
 
     public function getSymbol(): string
@@ -56,11 +52,9 @@ class Currency{
         return $this->symbol;
     }
 
-    public function setSymbol(string $symbol): self
+    public function setSymbol(string $symbol): void
     {
         $this->symbol = $symbol;
-
-        return $this;
     }
 
     public function getPrices(): Collection
@@ -68,25 +62,21 @@ class Currency{
         return $this->prices;
     }
 
-    public function addPrice(Price $price): self
+    public function addPrice(Price $price): void
     {
         if (!$this->prices->contains($price)) {
             $this->prices[] = $price;
             $price->setCurrency($this);
         }
-
-        return $this;
     }
 
-    public function removePrice(Price $price): self
+    public function removePrice(Price $price): void
     {
-        if ($this->prices->removeElement($price)) {
-            // Set the owning side to null (unless already changed)
+        if ($this->prices->contains($price)) {
+            $this->prices->removeElement($price);
             if ($price->getCurrency() === $this) {
                 $price->setCurrency(null);
             }
         }
-
-        return $this;
     }
 }

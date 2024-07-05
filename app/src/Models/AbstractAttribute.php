@@ -1,47 +1,50 @@
 <?php
 namespace App\Models;
 
+use App\Entity\Item;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 
 /**
- * @ORM\MappedSuperclass
+ * Add DiscriminatorMap for these id's:
+
+ * Size
+ * Color
+ * Capacity
+ * OtherAttribute
+
  */
-abstract class AbstractAttribute
+
+#[ORM\Entity]
+#[ORM\Table(name: 'attribute')]
+#[ORM\InheritanceType("SINGLE_TABLE")]
+#[ORM\DiscriminatorColumn(name: 'discr', type: 'string')]
+#[ORM\DiscriminatorMap(['size' => Size::class, 'color' => Color::class, 'capacity' => Capacity::class, 'other' => OtherAttribute::class])]
+class Attribute
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue]
     protected $attribute_id;
 
-    /**
-     * @ORM\Column(type="string")
-     */
+    #[ORM\Column(type: 'string')]
     protected $id;
+    
+    #[ORM\ManyToOne(targetEntity: "Product", inversedBy: "attributes")]
+    #[ORM\JoinColumn(name: "product_id", referencedColumnName: "product_id")]
+    protected Product $product;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="AbstractProduct", inversedBy="attributes")
-     * @ORM\JoinColumn(name="product_id", referencedColumnName="product_id")
-     */
-    protected $product;
-
-    /**
-     * @ORM\Column(type="string")
-     */
+    
+    #[ORM\Column(type: "string")]
     protected $name;
 
-    /**
-     * @ORM\Column(type="string")
-     */
+    #[ORM\Column(type: "string")]
     protected $type;
 
-    /**
-     * @ORM\OneToMany(targetEntity="Item", mappedBy="attribute", cascade={"persist", "remove"})
-     */
-    protected $items;
+    
+    #[ORM\OneToMany(targetEntity: "Item", mappedBy: "attribute")]
+    protected Collection $items;
 
     public function __construct()
     {
