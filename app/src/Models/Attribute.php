@@ -1,26 +1,20 @@
 <?php
 namespace App\Models;
 
+use App\Entity\Size;
+use App\Entity\Color;
+use App\Entity\Capacity;
+use App\Entity\Other;
 use App\Entity\Item;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 
-/**
- * Add DiscriminatorMap for these id's:
-
- * Size
- * Color
- * Capacity
- * OtherAttribute
-
- */
-
 #[ORM\Entity]
 #[ORM\Table(name: 'attribute')]
 #[ORM\InheritanceType("SINGLE_TABLE")]
 #[ORM\DiscriminatorColumn(name: 'discr', type: 'string')]
-#[ORM\DiscriminatorMap(['size' => Size::class, 'color' => Color::class, 'capacity' => Capacity::class, 'other' => OtherAttribute::class])]
+#[ORM\DiscriminatorMap(['size' => Size::class, 'color' => Color::class, 'capacity' => Capacity::class, 'other' => Other::class])]
 class Attribute
 {
     #[ORM\Id]
@@ -31,7 +25,7 @@ class Attribute
     #[ORM\Column(type: 'string')]
     protected $id;
     
-    #[ORM\ManyToOne(targetEntity: "Product", inversedBy: "attributes")]
+    #[ORM\ManyToOne(targetEntity: Product::class, inversedBy: "attributes")]
     #[ORM\JoinColumn(name: "product_id", referencedColumnName: "product_id")]
     protected Product $product;
 
@@ -42,8 +36,8 @@ class Attribute
     #[ORM\Column(type: "string")]
     protected $type;
 
-    
-    #[ORM\OneToMany(targetEntity: "Item", mappedBy: "attribute")]
+    /** @var Collection<int, Item> */
+    #[ORM\OneToMany(targetEntity: Item::class, mappedBy: "attribute")]
     protected Collection $items;
 
     public function __construct()
@@ -68,12 +62,12 @@ class Attribute
         $this->id = $id;
     }
 
-    public function getProduct(): ?AbstractProduct
+    public function getProduct(): ?Product
     {
         return $this->product;
     }
 
-    public function setProduct(?AbstractProduct $product): void
+    public function setProduct(?Product $product): void
     {
         $this->product = $product;
     }

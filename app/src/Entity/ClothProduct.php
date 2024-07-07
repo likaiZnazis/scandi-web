@@ -10,4 +10,4 @@ use Doctrine\Common\Collections\Collection;
 class ClothProduct extends Product
 {
 
-} 
+}

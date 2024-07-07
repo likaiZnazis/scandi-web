@@ -44,9 +44,15 @@ class Product
     #[ORM\OneToMany(targetEntity: Attribute::class, mappedBy: 'product')]
     protected Collection $attributes;
 
+    //There can be only one category for a product
+    #[ORM\ManyToOne(targetEntity: "Category", inversedBy: "products")]
+    #[ORM\JoinColumn(name: "category_id", referencedColumnName: "category_id")]
+    protected Category $category;
+
     public function __construct()
     {
         $this->prod_prices = new ArrayCollection();
+        $this->attributes = new ArrayCollection();
     }
     // Getters and setters...
 
@@ -95,6 +101,18 @@ class Product
     {
         $this->description = $description;
     }
+    
+    public function getIn_stock()
+    {
+        return $this->in_stock;
+    }
+
+    public function setIn_stock($in_stock)
+    {
+        $this->in_stock = $in_stock;
+
+        return $this;
+    }
 
     public function getBrand(): ?string
     {
@@ -104,6 +122,18 @@ class Product
     public function setBrand(?string $brand): void
     {
         $this->brand = $brand;
+    }
+
+    public function getCategory()
+    {
+        return $this->category;
+    }
+
+    public function setCategory(Category $category)
+    {
+        $this->category = $category;
+
+        return $this;
     }
 
     public function getprod_prices(): Collection
@@ -129,15 +159,22 @@ class Product
         }
     }
 
-    public function getIn_stock()
+    public function addAttribute(Attribute $attribute): void
     {
-        return $this->in_stock;
+        if (!$this->attributes->contains($attribute)) {
+            $this->attributes[] = $attribute;
+            $attribute->setProduct($this);
+        }
     }
 
-    public function setIn_stock($in_stock)
+    public function removeAttribute(Attribute $attribute): void
     {
-        $this->in_stock = $in_stock;
-
-        return $this;
+        if ($this->attributes->contains($attribute)) {
+            $this->attributes->removeElement($attribute);
+            if ($attribute->getProduct() === $this) {
+                $attribute->setProduct(null);
+            }
+        }
     }
+
 }
