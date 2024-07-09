@@ -3,28 +3,6 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../app/Config/bootstrap.php';
 
-//use all the required models to create product
-use App\Entity\Currency;
-use App\Entity\Price;
-
-
-//lets add one product to the database
-$currencyUSD = new Currency();
-$currencyUSD->setSymbol('$');
-$currencyUSD->setLabel('USD');
-
-$price = new Price();
-$price->setAmount(100.00);
-$price->setCurrency($currencyUSD);
-
-$currencyUSD->addPrice($price);
-
-$entityManager->persist($currencyUSD);
-$entityManager->persist($price);
-
-// Flush changes to the database
-$entityManager->flush();
-
 $dispatcher = FastRoute\simpleDispatcher(function(FastRoute\RouteCollector $r) {
     $r->post('/graphql', [App\Controller\GraphQL::class, 'handle']);
 });
