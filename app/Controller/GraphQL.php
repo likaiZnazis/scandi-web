@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+
+use App\Models\Category;
 use GraphQL\GraphQL as GraphQLBase;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
@@ -9,67 +11,104 @@ use GraphQL\Type\Schema;
 use GraphQL\Type\SchemaConfig;
 use RuntimeException;
 use Throwable;
+use Doctrine\ORM\EntityManagerInterface;
 
 class GraphQL {
-    static public function handle() {
+
+    private $entityManager;
+
+    public function __construct(EntityManagerInterface $entityManager)
+    {
+        $this->entityManager = $entityManager;
+    }
+   
+
+    public function handle() {
         try {
-            // Define the Query type with an 'echo' field that takes a 'message' argument
+            //Category: category_id, category_name, products 
+
+            $categoryType = new ObjectType([
+                'name' => 'Category',
+                'fields' => [
+                    'category_id' => Type::int(),
+                    'category_name' => Type::string(),
+                ],
+            ]);
+            
             $queryType = new ObjectType([
                 'name' => 'Query',
                 'fields' => [
-                    'echo' => [
-                        'type' => Type::string(),
+                    'category' => [
+                        'type' => $categoryType,
                         'args' => [
-                            'message' => ['type' => Type::string()],
+                            'id' => ['type' => Type::int()],
                         ],
-                        // Resolver for the 'echo' field, prepends 'prefix' to the message
-                        'resolve' => static fn ($rootValue, array $args): string => $rootValue['prefix'] . $args['message'],
+                        'resolve' => function ($rootValue, array $args) {
+                            $categoryId = $args['id'];
+                            $category = $this->entityManager->getRepository(Category::class)->find($categoryId);
+                            
+                            if (!$category) {
+                                throw new \RuntimeException("Did not find category with ID - $categoryId");
+                            }
+            
+                            return [
+                                'category_id' => $category->getCategoryId(),
+                                'category_name' => $category->getCategory(),
+                            ];
+                        },
                     ],
                 ],
             ]);
+            
+
+            // $queryType = new ObjectType([
+            //     'name' => 'Query',
+            //     'fields' => [
+            //         'echo' => [
+            //             'type' => Type::string(),
+            //             'args' => [
+            //                 'message' => ['type' => Type::string()],
+            //             ],
+            //             'resolve' => static fn ($rootValue, array $args): string => $rootValue['prefix'] . $args['message'],
+            //         ],
+            //     ],
+            // ]);
         
-            // Define the Mutation type with a 'sum' field that takes 'x' and 'y' arguments
-            $mutationType = new ObjectType([
-                'name' => 'Mutation',
-                'fields' => [
-                    'sum' => [
-                        'type' => Type::int(),
-                        'args' => [
-                            'x' => ['type' => Type::int()],
-                            'y' => ['type' => Type::int()],
-                        ],
-                        // Resolver for the 'sum' field, returns the sum of 'x' and 'y'
-                        'resolve' => static fn ($calc, array $args): int => $args['x'] + $args['y'],
-                    ],
-                ],
-            ]);
+            // $mutationType = new ObjectType([
+            //     'name' => 'Mutation',
+            //     'fields' => [
+            //         'sum' => [
+            //             'type' => Type::int(),
+            //             'args' => [
+            //                 'x' => ['type' => Type::int()],
+            //                 'y' => ['type' => Type::int()],
+            //             ],
+            //             'resolve' => static fn ($calc, array $args): int => $args['x'] + $args['y'],
+            //         ],
+            //     ],
+            // ]);
         
-            // Create the schema with the Query and Mutation types
+            // See docs on schema options:
+            // https://webonyx.github.io/graphql-php/schema-definition/#configuration-options
             $schema = new Schema(
                 (new SchemaConfig())
                 ->setQuery($queryType)
-                ->setMutation($mutationType)
+                // ->setMutation($mutationType)
             );
         
-            // Read the raw input from the request body
             $rawInput = file_get_contents('php://input');
             if ($rawInput === false) {
                 throw new RuntimeException('Failed to get php://input');
             }
-            
-            // Decode the JSON input into an array
+        
             $input = json_decode($rawInput, true);
             $query = $input['query'];
             $variableValues = $input['variables'] ?? null;
         
-            // Root value with a prefix for the 'echo' field
-            $rootValue = ['prefix' => 'You said: '];
-            // Execute the GraphQL query
-            $result = GraphQLBase::executeQuery($schema, $query, $rootValue, null, $variableValues);
-            // Convert the result to an array
+            // $rootValue = ['prefix' => 'You said: '];
+            $result = GraphQLBase::executeQuery($schema, $query, null, null, $variableValues);
             $output = $result->toArray();
         } catch (Throwable $e) {
-            // Handle any exceptions by returning an error message
             $output = [
                 'error' => [
                     'message' => $e->getMessage(),
@@ -77,9 +116,7 @@ class GraphQL {
             ];
         }
 
-        // Set the response header to JSON
         header('Content-Type: application/json; charset=UTF-8');
-        // Encode the output as JSON and return it
         return json_encode($output);
     }
 }

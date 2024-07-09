@@ -18,3 +18,4 @@ $dbParams = require __DIR__ . '/../Database/db_params.php';
 $config = ORMSetup::createAttributeMetadataConfiguration($paths, $isDevMode);
 $connection = DriverManager::getConnection($dbParams, $config);
 $entityManager = new EntityManager($connection, $config);
+return $entityManager;
