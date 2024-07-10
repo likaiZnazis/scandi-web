@@ -2,8 +2,10 @@
 
 namespace App\Controller;
 
-
+use App\Entity\Price;
+use App\Entity\Currency;
 use App\Models\Category;
+use App\Models\Product;
 use GraphQL\GraphQL as GraphQLBase;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
@@ -23,38 +25,107 @@ class GraphQL {
     }
    
 
-    public function handle() {
+    public function mainPage() {
         try {
-            //Category: category_id, category_name, products 
+            
+            $currencyType = new ObjectType([
+                'name' => 'Currency',
+                'fields' => [
+                    'currency_id' => Type::int(),
+                    'label' => Type::string(),
+                    'symbol' => Type::string(),
+                ]
+                
+            ]);
+
+            $priceType = new ObjectType([
+                'name' => 'Price',
+                'fields' => [
+                    'price_id' => Type::int(),
+                    'amount' => Type::float(),
+                    'currency' => [
+                        'type' => $currencyType,
+                        'resolve' => function ($price) {
+                            $currency = $this->entityManager->getRepository(Currency::class)
+                                ->find($price->getCurrency()->getCurrencyId());
+                            return [
+                                'currency_id' => $currency->getCurrencyId(),
+                                'label' => $currency->getLabel(),
+                                'symbol' => $currency->getSymbol(),
+                            ];
+                        }
+                    ]
+                ],
+            ]);
+
+            //Provide: attribute, 
+            $productType = new ObjectType([
+                'name' => 'Product',
+                'fields' => [
+                    'product_id' => Type::int(),
+                    'id' => Type::string(),
+                    'name' => Type::string(),
+                    'in_stock' => Type::boolean(),
+                    'gallery' => Type::listOf(Type::string()),
+                    'description' => Type::string(),
+                    'brand' => Type::string(),
+                    'prod_prices' =>[
+                        'type' => Type::listOf($priceType),
+                        'resolve' => function ($product){
+                            $prices = $this->entityManager->getRepository(Price::class)
+                                ->findBy(['product' => $product['product_id']]);
+                                return array_map(function ($price) {
+                                    return [
+                                        'price_id' => $price->getPriceId(),
+                                        'amount' => $price->getAmount(),
+                                        'currency' => $price->getCurrency(),
+                                    ];
+                                }, $prices);
+                            }
+                    ] 
+                ],
+            ]);
 
             $categoryType = new ObjectType([
                 'name' => 'Category',
                 'fields' => [
                     'category_id' => Type::int(),
                     'category_name' => Type::string(),
+                    'products' => [
+                        'type' => Type::listOf($productType),
+                        'resolve' => function ($category) {
+                            $products = $this->entityManager->getRepository(Product::class)
+                                ->findBy(['category' => $category['category_id']]);
+                            return array_map(function ($product) {
+                                return [
+                                    'product_id' => $product->getProductId(),
+                                    'id' => $product->getId(),
+                                    'name' => $product->getName(),
+                                    'in_stock' =>$product->getIn_stock(),
+                                    'gallery' => $product->getGallery(),
+                                    'description' => $product->getDescription(),
+                                    'brand' => $product->getBrand(),
+                                    'prices'=> $product->getprod_prices(),
+                                ];
+                            }, $products);
+                        }
+                    ]
                 ],
             ]);
-            
+    
             $queryType = new ObjectType([
                 'name' => 'Query',
                 'fields' => [
-                    'category' => [
-                        'type' => $categoryType,
-                        'args' => [
-                            'id' => ['type' => Type::int()],
-                        ],
-                        'resolve' => function ($rootValue, array $args) {
-                            $categoryId = $args['id'];
-                            $category = $this->entityManager->getRepository(Category::class)->find($categoryId);
-                            
-                            if (!$category) {
-                                throw new \RuntimeException("Did not find category with ID - $categoryId");
-                            }
-            
-                            return [
-                                'category_id' => $category->getCategoryId(),
-                                'category_name' => $category->getCategory(),
-                            ];
+                    'categories' => [
+                        'type' => Type::listOf($categoryType),
+                        'resolve' => function () {
+                            $categories = $this->entityManager->getRepository(Category::class)->findAll();
+                            return array_map(function ($category) {
+                                return [
+                                    'category_id' => $category->getCategoryId(),
+                                    'category_name' => $category->getCategory(),
+                                ];
+                            }, $categories);
                         },
                     ],
                 ],

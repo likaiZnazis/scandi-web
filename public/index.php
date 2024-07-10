@@ -13,7 +13,7 @@ use Doctrine\ORM\EntityManagerInterface;
 $graphQLController = new GraphQL($entityManager);
 
 $dispatcher = FastRoute\simpleDispatcher(function(FastRoute\RouteCollector $r) use ($graphQLController) {
-    $r->post('/graphql', [$graphQLController, 'handle']);
+    $r->post('/graphql', [$graphQLController, 'mainPage']);
 });
 
 $routeInfo = $dispatcher->dispatch(
