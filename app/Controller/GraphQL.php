@@ -43,18 +43,18 @@ class GraphQL {
                 'fields' => [
                     'price_id' => Type::int(),
                     'amount' => Type::float(),
-                    'currency' => [
-                        'type' => $currencyType,
-                        'resolve' => function ($price) {
-                            $currency = $this->entityManager->getRepository(Currency::class)
-                                ->find($price->getCurrency()->getCurrencyId());
-                            return [
-                                'currency_id' => $currency->getCurrencyId(),
-                                'label' => $currency->getLabel(),
-                                'symbol' => $currency->getSymbol(),
-                            ];
-                        }
-                    ]
+                    'currency' => $currencyType,
+                        // 'resolve' => function ($price) {
+                        //     $priceCurrencys = ($this->entityManager->getRepository(Price::class))-findAll();
+                        //     return array_map(function ($currency){
+                        //         return [
+                        //             'currency_id' => $currency->getCurrencyId(),
+                        //             'label' => $currency->getLabel(),
+                        //             'symbol' => $currency->getSymbol(),
+                        //         ];
+                        //     },$priceCurrencys);
+                        // }
+                    
                 ],
             ]);
 
@@ -78,7 +78,11 @@ class GraphQL {
                                     return [
                                         'price_id' => $price->getPriceId(),
                                         'amount' => $price->getAmount(),
-                                        'currency' => $price->getCurrency(),
+                                        'currency' => [
+                                            'currency_id' => $price->getCurrency()->getCurrencyId(),
+                                            'label' => $price->getCurrency()->getLabel(),
+                                            'symbol' => $price->getCurrency()->getSymbol(),
+                                        ],
                                     ];
                                 }, $prices);
                             }
