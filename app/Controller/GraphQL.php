@@ -6,6 +6,8 @@ use App\Entity\Price;
 use App\Entity\Currency;
 use App\Models\Category;
 use App\Models\Product;
+use App\Entity\Item;
+use App\Models\Attribute;
 use GraphQL\GraphQL as GraphQLBase;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
@@ -27,6 +29,43 @@ class GraphQL {
 
     public function mainPage() {
         try {
+
+            //Need to create items and attributes
+            
+            $itemType = new ObjectType([
+                'name' => 'Item',
+                'fields' => [
+                    'item_id' => Type::int(),
+                    'displayValue' => Type::string(),
+                    'value' => Type::string(),
+                    'id' => Type::string(),
+                ]
+            ]);
+            
+            $attributeType = new ObjectType([
+                'name' => 'Attribute',
+                'fields' => [
+                    'attribute_id' => Type::int(),
+                    'id' => Type::string(),
+                    'name' => Type::string(),
+                    'type' => Type::string(),
+                    'items' => [
+                        'type' => Type::listOf($itemType),
+                        'resolve' => function ($attribute) {
+                            $items = $this->entityManager->getRepository(Item::class)
+                                ->findBy(['attribute' => $attribute['attribute_id']]);
+                            return array_map(function ($item) {
+                                return [
+                                    'item_id' => $item->getItem_id(),
+                                    'displayValue' => $item->getDisplayValue(),
+                                    'value' => $item->getValue(),
+                                    'id' => $item->getId(),
+                                ];
+                            }, $items);
+                        }
+                    ]
+                ]
+            ]);
             
             $currencyType = new ObjectType([
                 'name' => 'Currency',
@@ -35,7 +74,6 @@ class GraphQL {
                     'label' => Type::string(),
                     'symbol' => Type::string(),
                 ]
-                
             ]);
 
             $priceType = new ObjectType([
@@ -44,21 +82,10 @@ class GraphQL {
                     'price_id' => Type::int(),
                     'amount' => Type::float(),
                     'currency' => $currencyType,
-                        // 'resolve' => function ($price) {
-                        //     $priceCurrencys = ($this->entityManager->getRepository(Price::class))-findAll();
-                        //     return array_map(function ($currency){
-                        //         return [
-                        //             'currency_id' => $currency->getCurrencyId(),
-                        //             'label' => $currency->getLabel(),
-                        //             'symbol' => $currency->getSymbol(),
-                        //         ];
-                        //     },$priceCurrencys);
-                        // }
-                    
                 ],
             ]);
 
-            //Provide: attribute, 
+            //Need for attributes and their items to show up
             $productType = new ObjectType([
                 'name' => 'Product',
                 'fields' => [
@@ -69,6 +96,13 @@ class GraphQL {
                     'gallery' => Type::listOf(Type::string()),
                     'description' => Type::string(),
                     'brand' => Type::string(),
+                    'attributes' => [
+                        'type' => Type::listOf($attributeType),
+                        'resolve' => function ($product) {
+                            $attributeResolver = new AttributeResolver($this->entityManager);
+                            return $attributeResolver->resolveAttributes($product);
+                        }
+                    ],
                     'prod_prices' =>[
                         'type' => Type::listOf($priceType),
                         'resolve' => function ($product){
@@ -78,10 +112,11 @@ class GraphQL {
                                     return [
                                         'price_id' => $price->getPriceId(),
                                         'amount' => $price->getAmount(),
+                                        $priceCurrency = $price->getCurrency(),
                                         'currency' => [
-                                            'currency_id' => $price->getCurrency()->getCurrencyId(),
-                                            'label' => $price->getCurrency()->getLabel(),
-                                            'symbol' => $price->getCurrency()->getSymbol(),
+                                            'currency_id' => $priceCurrency->getCurrencyId(),
+                                            'label' => $priceCurrency->getLabel(),
+                                            'symbol' => $priceCurrency->getSymbol(),
                                         ],
                                     ];
                                 }, $prices);
@@ -109,6 +144,7 @@ class GraphQL {
                                     'gallery' => $product->getGallery(),
                                     'description' => $product->getDescription(),
                                     'brand' => $product->getBrand(),
+                                    'attributes' => $product->getAttributes(),
                                     'prices'=> $product->getprod_prices(),
                                 ];
                             }, $products);
@@ -116,7 +152,7 @@ class GraphQL {
                     ]
                 ],
             ]);
-    
+
             $queryType = new ObjectType([
                 'name' => 'Query',
                 'fields' => [
@@ -132,22 +168,21 @@ class GraphQL {
                             }, $categories);
                         },
                     ],
+                    'attributes' => [
+                        'type' => Type::listOf($attributeType),
+                        'resolve' => function () {
+                            $attributes = $this->entityManager->getRepository(Attribute::class)->findAll();
+                            return array_map(function ($attribute) {
+                                return [
+                                    'attribute_id' => $attribute->getAttributeId(),
+                                    'name' => $attribute->getName(),
+                                    'items' => $attribute->getItems(),
+                                ];
+                            }, $attributes);
+                        }
+                    ],
                 ],
             ]);
-            
-
-            // $queryType = new ObjectType([
-            //     'name' => 'Query',
-            //     'fields' => [
-            //         'echo' => [
-            //             'type' => Type::string(),
-            //             'args' => [
-            //                 'message' => ['type' => Type::string()],
-            //             ],
-            //             'resolve' => static fn ($rootValue, array $args): string => $rootValue['prefix'] . $args['message'],
-            //         ],
-            //     ],
-            // ]);
         
             // $mutationType = new ObjectType([
             //     'name' => 'Mutation',
@@ -163,24 +198,32 @@ class GraphQL {
             //     ],
             // ]);
         
-            // See docs on schema options:
-            // https://webonyx.github.io/graphql-php/schema-definition/#configuration-options
             $schema = new Schema(
                 (new SchemaConfig())
                 ->setQuery($queryType)
-                // ->setMutation($mutationType)
             );
-        
+
             $rawInput = file_get_contents('php://input');
             if ($rawInput === false) {
                 throw new RuntimeException('Failed to get php://input');
             }
-        
+
+            if (empty($rawInput)) {
+                throw new RuntimeException('Empty query input');
+            }
+
             $input = json_decode($rawInput, true);
-            $query = $input['query'];
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                throw new RuntimeException('Invalid JSON input: ' . json_last_error_msg());
+            }
+
+            $query = $input['query'] ?? null;
+            if ($query === null) {
+                throw new RuntimeException('Query not provided');
+            }
+
             $variableValues = $input['variables'] ?? null;
-        
-            // $rootValue = ['prefix' => 'You said: '];
+
             $result = GraphQLBase::executeQuery($schema, $query, null, null, $variableValues);
             $output = $result->toArray();
         } catch (Throwable $e) {
@@ -192,6 +235,6 @@ class GraphQL {
         }
 
         header('Content-Type: application/json; charset=UTF-8');
-        return json_encode($output);
+        echo json_encode($output);
     }
 }

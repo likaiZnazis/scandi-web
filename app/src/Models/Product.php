@@ -141,6 +141,11 @@ class Product
         return $this->prod_prices;
     }
 
+    public function getAttributes(): Collection
+    {
+        return $this->attributes;
+    }
+
     public function addPrice(Price $price): void
     {
         if (!$this->prod_prices->contains($price)) {
