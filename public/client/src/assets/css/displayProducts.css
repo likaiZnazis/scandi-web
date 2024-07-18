@@ -1,0 +1,26 @@
+@import url('https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap');
+
+:root{
+    --default-text-color: #1D1F22;
+    --font-family: "Raleway";
+    --line-height: 1.8rem;
+    --font-weight-medium: 400;
+    --font-weight-medium-light: 300;
+    --font-size: 1.125rem;
+}
+
+h1{
+    margin-left: 6.3125rem;
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family);
+    line-height: 4.2rem;
+    font-size: 2.625rem;
+    margin-top: 5rem;
+    margin-bottom: 6.4rem;
+}
+
+.gird-container{
+    display: grid;
+    margin-left: 6.25rem;
+    gap: 2.5rem;
+}

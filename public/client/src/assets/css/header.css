@@ -1,22 +1,40 @@
 @import url('https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap');
 
+:root{
+    --default-text-color: #1D1F22;
+    --active-text-color: #5ECE7B;
+    --font-family: "Raleway";
+    --line-height: 19.2px;
+    --font-weight: 400;
+}
+/*1rem=16px*/
 header{
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    margin-right: 101px;
+    margin-right: 6.3125rem;
+    margin-left: 3.8rem;
 }
 
 ul{
     list-style-type: none;
 }
-/*1rem=16px*/
 
 li{
     display: inline;
     /*top right bottom left*/
     padding: 0.25rem 1rem 2rem 1rem;
-    font-family: "Raleway";
-    line-height: 19.2px;
+    font-family: var(--font-family);
+    line-height: var(--line-height);
+    color: var(--default-text-color);
+    font-weight: var(--font-weight);
+    text-align: center;
+    font-size: 16px;
 }
 
+/*Active category*/
+li.active{
+    color: var(--active-text-color);
+    border-bottom: 2px solid var(--active-text-color);
+    font-weight: 600;
+}
