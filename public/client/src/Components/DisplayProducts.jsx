@@ -1,17 +1,23 @@
 import React, { Component } from 'react';
-import { Query } from '@apollo/client/react/components';
 import { gql } from '@apollo/client';
-
-//style
+import { Query } from '@apollo/client/react/components';
 import '../assets/css/displayProducts.css';
+import cartIcon from '../assets/images/Product-cart-overlay.svg';
 
 const GET_PRODUCTS = gql`
   query GetProducts($categoryName: String!) {
     category(category_name: $categoryName) {
-      category_id
-      category_name
       products {
         product_id
+        name
+        gallery
+        in_stock
+        prod_prices {
+          amount
+          currency {
+            symbol
+          }
+        }
       }
     }
   }
@@ -21,9 +27,23 @@ class DisplayProducts extends Component {
   capitalizeFirstLetter = (string) => {
     return string.charAt(0).toUpperCase() + string.slice(1);
   }
-  render() {
 
-    const { categoryName } = this.props;
+  handleCartClick = (productId) => {
+    console.log(`Add product ${productId} to cart`);
+  };
+
+  toKebabCase = (str) => {
+    return str
+      .toLowerCase()
+      .replace(/\s+/g, '-') // Replace spaces with dashes
+      .replace(/[^\w\-]+/g, '') // Remove non-word characters
+      .replace(/\-\-+/g, '-') // Replace multiple dashes with a single dash
+      .replace(/^-+/, '') // Remove leading dashes
+      .replace(/-+$/, ''); // Remove trailing dashes
+  }
+
+  render() {
+    const { categoryName, onSelectProduct } = this.props;
     const capitalizedCategoryName = this.capitalizeFirstLetter(categoryName);
 
     return (
@@ -31,13 +51,46 @@ class DisplayProducts extends Component {
         {({ loading, error, data }) => {
           if (loading) return <p>Loading...</p>;
           if (error) return <p>Error: {error.message}</p>;
+
           return (
-            
             <div>
               <h1>{capitalizedCategoryName}</h1>
-              <div className='gird-container'>
+              <div className='grid-container'>
                 {data.category.products.map((product) => (
-                  <div className='grid-product' key={product.product_id}>{product.product_id}</div>
+                  <div
+                    className={`grid-product ${!product.in_stock ? 'product-out-of-stock' : ''}`}
+                    key={product.product_id}
+                    data-testid={`product-${this.toKebabCase(product.name)}`}
+                    onClick={() => onSelectProduct(product)}
+                  >
+                    {product.gallery.length > 0 && (
+                      <img
+                        className="product-image"
+                        src={product.gallery[0]}
+                        alt={`${product.name} image`}
+                      />
+                    )}
+                    {!product.in_stock && (
+                      <p className='out-of-stock'>OUT OF STOCK</p>
+                    )}
+                    <div className='product-details'>
+                      <p className='product-name'>{product.name}</p>
+                      {product.prod_prices.map((price, index) => (
+                        <p className='product-price' key={index}>
+                          {price.currency.symbol}{price.amount}
+                        </p>
+                      ))}
+                    </div>
+                    <img
+                      className='cart-icon'
+                      src={cartIcon}
+                      alt='Add to cart'
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent the click event from bubbling up to the parent div
+                        this.handleCartClick(product.product_id);
+                      }}
+                    />
+                  </div>
                 ))}
               </div>
             </div>
