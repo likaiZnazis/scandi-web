@@ -12,6 +12,17 @@ const GET_PRODUCTS = gql`
         name
         gallery
         in_stock
+        description
+        attributes {
+          attribute_id
+          id 
+          items {
+            item_id
+            displayValue
+            value
+            id }
+          name
+          type } 
         prod_prices {
           amount
           currency {
@@ -54,7 +65,7 @@ class DisplayProducts extends Component {
 
           return (
             <div>
-              <h1>{capitalizedCategoryName}</h1>
+              <h1 className='category-name'>{capitalizedCategoryName}</h1>
               <div className='grid-container'>
                 {data.category.products.map((product) => (
                   <div

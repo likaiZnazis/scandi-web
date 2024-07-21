@@ -1,5 +1,5 @@
 <?php
-namespace App\Controller;
+namespace App\Graphql;
 
 use App\Models\Attribute;
 use Doctrine\ORM\EntityManagerInterface;
@@ -11,9 +11,12 @@ class AttributeResolver {
         $this->entityManager = $entityManager;
     }
 
+    /**
+     * Resolver attributes inside the query not on the object
+     */
     public function resolveAttributes($product) {
         $attributes = $this->entityManager->getRepository(Attribute::class)
-            ->findBy(['product' => $product['product_id']]);
+            ->findBy(['product' => $product->getProductId()]);
         return array_map(function ($attribute) {
             return [
                 'attribute_id' => $attribute->getAttributeId(),

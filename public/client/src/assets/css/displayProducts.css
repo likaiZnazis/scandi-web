@@ -9,7 +9,7 @@
     --font-size: 1.125rem;
 }
 
-h1{
+.category-name{
     margin-left: 6.3125rem;
     font-weight: var(--font-weight-medium);
     font-family: var(--font-family);

@@ -39,12 +39,12 @@ class Category
         return $this->category_id;
     }
 
-    public function getCategory(): string
+    public function getCategoryName(): string
     {
         return $this->category_name;
     }
 
-    public function setCategory(string $category_name): void
+    public function setCategoryName(string $category_name): void
     {
         $this->category_name = $category_name;
     }
