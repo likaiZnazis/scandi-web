@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import ActiveAttribute from './ActiveAttribute';
 
 //Style
 import '../assets/css/productDetail.css';
@@ -6,39 +7,26 @@ import '../assets/css/productDetail.css';
 
 
 class ProductDetail extends Component {
-    parseDescription = (description) => (description.replace("<p>", "").replace("</p>", ""))
-    renderAttribute = (attribute) => {
-        const setHexColor = (color) => color.includes("#") ?
-         color : `#${color}`; 
-        switch (attribute.type) {
-          case 'swatch':
-            return (
-              <div className='swatch-attribute' key={attribute.id}>
-                {attribute.items.map((item) => (
-                    
-                  <div 
-                    key={item.id} 
-                    className='swatch-item' 
-                    style={{ backgroundColor: setHexColor(item.value) }}
-                    title={item.displayValue}
-                  />
-                ))}
-              </div>
-            );
-          case 'text':
-            return (
-              <div className='text-attribute' key={attribute.id}>
-                {attribute.items.map((item) => (
-                  <div key={item.id} className='text-item'>
-                    {item.displayValue}
-                  </div>
-                ))}
-              </div>
-            );
-          default:
-            return null;
-        }
-      };
+  //Need to create a new component ProductAttributes.
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      selectedAttributes: {},
+    };
+  }
+
+  handleAttributeSelect = (attributeId, value) => {
+    this.setState((prevState) => ({
+      selectedAttributes: {
+        ...prevState.selectedAttributes,
+        [attributeId]: value,
+      },
+    }));
+  };
+
+  parseDescription = (description) => (description.replaceAll("<p>", "").replaceAll("</p>", ""))
+
   render() {
     const { product } = this.props;
 
@@ -52,14 +40,13 @@ class ProductDetail extends Component {
         </div>
         <div>
             <h1 className='product-detail-name'>{product.name}</h1>
-            {product.attributes.map((attribute) => (
-                <div className='attributes' key={attribute.id}>
-                    <p className='attribute-id' >
-                        {`${attribute.id.toUpperCase()}:`}
-                    </p>
-                    {this.renderAttribute(attribute)}
-                </div>
-            ))}
+          {product.attributes.map((attribute) => (
+            <ActiveAttribute
+              key={attribute.id}
+              attribute={attribute}
+              onAttributeSelect={(value) => this.handleAttributeSelect(attribute.id, value)}
+            />
+          ))}
             <p className='price-label'>PRICE:</p>
             {product.prod_prices.map((price, index) => (
             <p className='product-detail-price' key={index}>
