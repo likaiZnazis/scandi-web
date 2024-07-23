@@ -17,8 +17,12 @@
 
 .grid-product-detail{
     display: grid;
-    margin: 5rem 15.3rem 14.5rem 2.5rem;
-    grid-template-columns: repeat(3, minmax(386px, 1fr));
+    margin: 5rem 15.3rem 14.5rem 6.25rem;
+    grid-template-columns: auto;
+}
+
+.product-detail-info{
+    grid-column: 3;
 }
 
 .product-detail-name{
@@ -56,7 +60,6 @@
 
 .price-label{
     margin:0;
-
 }
 
 .cart-button{
@@ -70,7 +73,7 @@
     font-weight: var(--font-weight-semi-strong);
     line-height: 1.2rem;
     padding: 1rem 2rem;
-    width: 50%;
+    width: 70%;
     cursor: pointer;
 }
 
@@ -81,4 +84,11 @@
     font-size: var(--font-size-light);
     font-weight: var(--font-weight-light);
     line-height: 1.6rem;
+}
+
+.grid-carousel{
+    grid-column: 2;
+    grid-row: 1;
+    margin-right: 6.9rem;
+    margin-left: 2.5rem;
 }

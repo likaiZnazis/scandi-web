@@ -23,7 +23,6 @@ class ActiveAttribute extends Component {
     const { selectedAttribute } = this.state;
 
     return (
-  
       <div className= 'attribute'>
         <p className="attribute-id">{`${attribute.id.toUpperCase()}:`}</p>
         <div className={`${attribute.type === 'swatch' 
