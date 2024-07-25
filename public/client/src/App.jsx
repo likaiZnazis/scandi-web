@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import Header from './Components/Header';
 import DisplayProducts from './Components/DisplayProducts';
 import ProductDetail from './Components/ProductDetail';
+import Cart from './Components/Cart';
 
 class App extends Component {
   constructor(props) {
@@ -10,6 +11,8 @@ class App extends Component {
     this.state = {
       selectedCategory: 'clothes',
       selectedProduct: null,
+      cartItems: [],
+      isCartVisible: false,
     };
   }
 
@@ -39,23 +42,42 @@ class App extends Component {
     window.history.pushState({ selectedProduct: product }, '', `?product=${product.product_id}`);
   };
 
+  addToCart = (product, selectedAttributes) => {
+    this.setState((prevState) => ({
+      cartItems: [...prevState.cartItems, { ...product, selectedAttributes, quantity: 1 }],
+    }));
+  };
+
+  toggleCartVisibility = () => {
+    this.setState((prevState) => ({
+      isCartVisible: !prevState.isCartVisible,
+    }));
+  };
+
   render() {
-    const { selectedCategory, selectedProduct } = this.state;
+    const { selectedCategory, selectedProduct, cartItems, isCartVisible } = this.state;
 
     return (
       <div id="root">
         <Header 
           onSelectCategory={this.setSelectedCategory} 
           activeCategory={selectedCategory}
+          cartItems={cartItems}
+          toggleCartVisibility={this.toggleCartVisibility}
         />
         {selectedProduct ? (
-          <ProductDetail product={selectedProduct} />
+          <ProductDetail product={selectedProduct}  addToCart = {this.addToCart}/>
         ) : (
           <DisplayProducts 
             categoryName={selectedCategory} 
             onSelectProduct={this.selectProduct} 
           />
         )}
+        <Cart 
+          cartItems={cartItems}
+          visibility={isCartVisible} 
+          toggleCartVisibility={this.toggleCartVisibility}
+        />
       </div>
     );
   }

@@ -9,7 +9,7 @@ import '../assets/css/header.css';
 
 class Header extends Component {
     render() {
-      const { onSelectCategory, activeCategory } = this.props;
+      const { onSelectCategory, activeCategory, toggleCartVisibility, cartItems } = this.props;
   
       return (
         <header>
@@ -32,7 +32,13 @@ class Header extends Component {
             </ul>
           </nav>
           <img src={Logo} alt="Logo" />
-          <img src={Cart} alt="Cart" />
+          <div className="cart-button-wrapper">
+            <img data-testid='cart-btn' onClick={toggleCartVisibility} src={Cart} alt="Cart" className='cart'/>
+            {cartItems.length > 0 && (
+              <div className="item-count-bubble"
+              onClick={toggleCartVisibility}>{cartItems.length}</div>
+            )}
+          </div>
         </header>
       );
     }
