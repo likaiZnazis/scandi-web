@@ -47,7 +47,9 @@ class ImageGallery extends Component {
           <button className="carousel-button prev" onClick={this.handlePreviousImage}>
             <img src={LeftArrow} alt="Left arrow" />
           </button>
-          <div className="carousel-container" ref={this.carouselRef}>
+          <div className="carousel-container"
+          data-testid='product-gallery'
+          ref={this.carouselRef}>
             {gallery.map((image, index) => (
               <div className="carousel-item" key={index}>
                 <img className="display-image" src={image} alt={`Product ${index}`} />

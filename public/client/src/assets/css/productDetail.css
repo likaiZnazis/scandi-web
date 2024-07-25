@@ -19,10 +19,12 @@
     display: grid;
     margin: 5rem 15.3rem 14.5rem 6.25rem;
     grid-template-columns: auto;
+
 }
 
 .product-detail-info{
     grid-column: 3;
+    padding-left: 7rem;
 }
 
 .product-detail-name{
@@ -73,7 +75,7 @@
     font-weight: var(--font-weight-semi-strong);
     line-height: 1.2rem;
     padding: 1rem 2rem;
-    width: 70%;
+    width: 50%;
     cursor: pointer;
 }
 
@@ -89,6 +91,8 @@
 .grid-carousel{
     grid-column: 2;
     grid-row: 1;
-    margin-right: 6.9rem;
-    margin-left: 2.5rem;
+}
+
+.cart-button.disabled{
+    background-color: grey;
 }

@@ -28,28 +28,30 @@
     display: grid;
     grid-column-gap: 2.5rem;
     grid-row-gap: 6.5rem;
+    grid-auto-rows: 1fr;
 }
 
 .grid-product {
     cursor:pointer;
     position: relative;
     padding: 1rem;
-    display: flex; /* Enables flexbox on the grid item */
-    flex-direction: column; /* Aligns content in a column */
-    align-items: center; /* Centers items horizontally */
-    justify-content: center; /* Centers items vertically */
-    width: 100%; /* Makes sure grid item takes full width of its cell */
-    height: 100%; /* Makes sure grid item takes full height of its cell */
-    box-sizing: border-box; /* Includes padding and border in the element's total width and height */
-    position: relative; /* Needed for absolute positioning of the cart icon */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    position: relative; 
     overflow: hidden;
 }
 
 .product-image {
-    width: 100%; /* Makes image take full width of its container */
-    height: auto; /* Keeps image aspect ratio while filling width */
-    object-fit: cover; /* Ensures image covers the area without distortion */
+    width: 100%;
+    height: auto;
+    object-fit: cover;
     margin-bottom: 1.5rem;
+    max-height: 330px;
 }
 
 .product-details{
@@ -79,14 +81,14 @@
 }
 
 .cart-icon {
-    position: absolute; /* Absolute positioning for overlay effect */
-    bottom: 4.5rem; /* Adjust as needed */
-    right: 2rem; /* Adjust as needed */
-    width: 52px; /* Adjust size as needed */
-    height: 52px; /* Maintain aspect ratio */
-    opacity: 0; /* Initially hidden */
-    transition: opacity 0.3s ease; /* Smooth transition for appearance */
-    cursor: pointer; /* Pointer cursor to indicate clickability */
+    position: absolute;
+    bottom: 4.5rem;
+    right: 2rem;
+    width: 52px;
+    height: 52px;
+    opacity: 0; 
+    transition: opacity 0.3s ease; 
+    cursor: pointer; 
 }
 
 .out-of-stock{
@@ -100,7 +102,7 @@
 
 .product-out-of-stock .product-image{
     opacity: 0.4;
-    filter: alpha(opacity=40); /* msie */
+    filter: alpha(opacity=40);
     background-color: #C4C4C4;
 }
 

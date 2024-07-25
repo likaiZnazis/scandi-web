@@ -46,11 +46,11 @@ class DisplayProducts extends Component {
   toKebabCase = (str) => {
     return str
       .toLowerCase()
-      .replace(/\s+/g, '-') // Replace spaces with dashes
-      .replace(/[^\w\-]+/g, '') // Remove non-word characters
-      .replace(/\-\-+/g, '-') // Replace multiple dashes with a single dash
-      .replace(/^-+/, '') // Remove leading dashes
-      .replace(/-+$/, ''); // Remove trailing dashes
+      .replace(/\s+/g, '-')
+      .replace(/[^\w\-]+/g, '')
+      .replace(/\-\-+/g, '-')
+      .replace(/^-+/, '')
+      .replace(/-+$/, '');
   }
 
   render() {

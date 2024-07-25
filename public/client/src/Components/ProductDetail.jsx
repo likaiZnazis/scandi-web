@@ -39,6 +39,13 @@ class ProductDetail extends Component {
 
   parseDescription = (description) => description.replace(/<[^>]*>?/gm, '');
 
+  allAttributesSelected = () => {
+    const { selectedAttributes } = this.state;
+    const { product } = this.props;
+
+    return product.attributes.every(attribute => selectedAttributes[attribute.id]);
+  };
+
   render() {
     const { product } = this.props;
     const { selectedImageIndex } = this.state;
@@ -71,12 +78,16 @@ class ProductDetail extends Component {
               {price.amount}
             </p>
           ))}
-          <button className="cart-button">ADD TO CART</button>
-          <p className="product-detail-description">{this.parseDescription(product.description)}</p>
+          <button
+          data-testid='add-to-cart'
+          className={`cart-button ${this.allAttributesSelected() ? '' : 'disabled'}`}
+          disabled={!this.allAttributesSelected()}>ADD TO CART</button>
+          <p className="product-detail-description"
+          data-testid='product-description'>{this.parseDescription(product.description)}</p>
         </div>
       </div>
     );
   }
 }
-
+//data-testid={`product-${this.toKebabCase(product.name)}`}
 export default ProductDetail;

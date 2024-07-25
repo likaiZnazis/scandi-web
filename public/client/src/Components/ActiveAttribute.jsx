@@ -16,6 +16,16 @@ class ActiveAttribute extends Component {
     this.props.onAttributeSelect(attribute);
   };
 
+  toKebabCase = (str) => {
+    return str
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^\w\-]+/g, '')
+      .replace(/\-\-+/g, '-')
+      .replace(/^-+/, '')
+      .replace(/-+$/, '');
+  }
+
   setHexColor = (color) => color.includes("#") ? color : `#${color}`;
 
   render() {
@@ -26,7 +36,8 @@ class ActiveAttribute extends Component {
       <div className= 'attribute'>
         <p className="attribute-id">{`${attribute.id.toUpperCase()}:`}</p>
         <div className={`${attribute.type === 'swatch' 
-      ? 'swatch-attribute' : 'text-attribute'}`}>
+      ? 'swatch-attribute' : 'text-attribute'}`}
+      data-testid={`product-attribute-${this.toKebabCase(attribute.id)}`}>
           {attribute.items.map((item) => {
             const isActive = selectedAttribute === item.value;
             return (
