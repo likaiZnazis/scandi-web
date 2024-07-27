@@ -42,11 +42,56 @@ class App extends Component {
     window.history.pushState({ selectedProduct: product }, '', `?product=${product.product_id}`);
   };
 
+  //In strict mode it adds the item twice. 1 -> 3
   addToCart = (product, selectedAttributes) => {
-    this.setState((prevState) => ({
-      cartItems: [...prevState.cartItems, { ...product, selectedAttributes, quantity: 1 }],
-    }));
+    this.setState((prevState) => {
+      //Check if item with the same attrbiutes is present in the cart
+      const existingProductIndex = prevState.cartItems.findIndex(
+        (item) =>
+          item.product_id === product.product_id &&
+          JSON.stringify(item.selectedAttributes) === JSON.stringify(selectedAttributes)
+      );
+
+      //If product exists with those attr add it to quantity
+      //else add new product
+      console.log(existingProductIndex);
+      if (existingProductIndex !== -1) {
+        const updatedCartItems = [...prevState.cartItems];
+        updatedCartItems[existingProductIndex].quantity += 1;
+        return { cartItems: updatedCartItems };
+      } else {
+        return {
+          cartItems: [
+            ...prevState.cartItems,
+            { ...product, selectedAttributes, quantity: 1 },
+          ],
+        };
+      }
+    });
   };
+
+  updateQuantity = (productId, change) => {
+    this.setState((prevState) => {
+      const updatedCartItems = prevState.cartItems
+        .map((item) => {
+          if (
+            item.product_id === productId
+          ) {
+            const newQuantity = item.quantity + change;
+            if (newQuantity > 0) {
+              return { ...item, quantity: newQuantity };
+            } else {
+              return null;
+            }
+          }
+          return item;
+        })
+        .filter((item) => item !== null);
+
+      return { cartItems: updatedCartItems };
+    });
+  };
+
 
   toggleCartVisibility = () => {
     this.setState((prevState) => ({
@@ -77,6 +122,7 @@ class App extends Component {
           cartItems={cartItems}
           visibility={isCartVisible} 
           toggleCartVisibility={this.toggleCartVisibility}
+          updateQuantity={this.updateQuantity}
         />
       </div>
     );

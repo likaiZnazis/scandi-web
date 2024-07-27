@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import '../assets/css/cart.css';
 
-class Cart extends Component {
+class Cart extends Component {  
 
   handleQuantityChange = (productId, change) => {
     this.props.updateQuantity(productId, change);
