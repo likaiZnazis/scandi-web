@@ -39,8 +39,14 @@ class DisplayProducts extends Component {
     return string.charAt(0).toUpperCase() + string.slice(1);
   }
 
-  handleCartClick = (productId) => {
-    console.log(`Add product ${productId} to cart`);
+  //Need to return the first 
+  selectFirstAttribute = (product) =>{
+    const arrayAttributes = product.attributes.map((attribute) => [attribute.id, attribute.items[0].value]);
+    return Object.fromEntries(arrayAttributes);
+  }
+
+  handleCartClick = (product) => {
+    this.props.addToCart(product,this.selectFirstAttribute(product));
   };
 
   toKebabCase = (str) => {
@@ -98,7 +104,7 @@ class DisplayProducts extends Component {
                       alt='Add to cart'
                       onClick={(e) => {
                         e.stopPropagation(); // Prevent the click event from bubbling up to the parent div
-                        this.handleCartClick(product.product_id);
+                        this.handleCartClick(product);
                       }}
                     />
                   </div>

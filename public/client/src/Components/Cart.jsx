@@ -40,7 +40,7 @@ class Cart extends Component {
   }
 
   setHexColor = (color) => color.includes("#") ? color : `#${color}`;
-  // data-testid={`product-${this.toKebabCase(product.name)}`}
+
   renderAttributes = (attributes, selectedAttributes) => {
     return attributes.map((attribute, index) => (
       <div key={index} className='attribute' >

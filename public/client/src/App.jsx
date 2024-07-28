@@ -123,7 +123,8 @@ class App extends Component {
         ) : (
           <DisplayProducts 
             categoryName={selectedCategory} 
-            onSelectProduct={this.selectProduct} 
+            onSelectProduct={this.selectProduct}
+            addToCart = {this.addToCart}
           />
         )}
         <Cart 

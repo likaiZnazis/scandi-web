@@ -49,7 +49,7 @@ class ProductDetail extends Component {
   handleAddToCart = () => {
     const { product, addToCart } = this.props;
     const { selectedAttributes } = this.state;
-    if (this.allAttributesSelected()) {
+    if (this.allAttributesSelected() && product.in_stock) {
       addToCart(product, selectedAttributes);
     }
   };
@@ -88,8 +88,7 @@ class ProductDetail extends Component {
           ))}
           <button
           data-testid='add-to-cart'
-          className={`cart-button ${this.allAttributesSelected() ? '' : 'disabled'}`}
-          disabled={!this.allAttributesSelected()}
+          className={`cart-button ${this.allAttributesSelected() && product.in_stock ? '' : 'disabled'}`}
           onClick={this.handleAddToCart}>ADD TO CART</button>
           <p className="product-detail-description"
           data-testid='product-description'>{this.parseDescription(product.description)}</p>
