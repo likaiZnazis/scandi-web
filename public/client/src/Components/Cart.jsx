@@ -17,6 +17,7 @@ class Cart extends Component {
     }, 0).toFixed(2);
   };
 
+  //rewrite
   getCurrencySymbol = () => {
     const { cartItems } = this.props;
     if (cartItems.length > 0) {
@@ -28,23 +29,35 @@ class Cart extends Component {
     return "$";
   };
 
-  setHexColor = (color) => color.includes("#") ? color : `#${color}`;
+  toKebabCase = (str) => {
+    return str
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^\w\-]+/g, '')
+      .replace(/\-\-+/g, '-')
+      .replace(/^-+/, '')
+      .replace(/-+$/, '');
+  }
 
+  setHexColor = (color) => color.includes("#") ? color : `#${color}`;
+  // data-testid={`product-${this.toKebabCase(product.name)}`}
   renderAttributes = (attributes, selectedAttributes) => {
     return attributes.map((attribute, index) => (
-      <div key={index} className='attribute'>
+      <div key={index} className='attribute' >
         <p className="attribute-id">{`${attribute.id.toUpperCase()}:`}</p>
-        <div className={`cart-${attribute.type === 'swatch' ? 'swatch-attribute' : 'text-attribute'}`}>
+        <div className={`cart-${attribute.type === 'swatch' ? 'swatch-attribute' : 'text-attribute'}`}
+        data-testid={`cart-item-attribute-${this.toKebabCase(attribute.id)}`}>
           {attribute.items.map(item => {
             const isActive = selectedAttributes[attribute.id] === item.value;
             return (
               <div
                 key={item.id}
                 className={`cart-attribute-item 
-                ${isActive ? 'active' : ''} 
+                ${isActive ? 'active' : ''}
                 cart-${attribute.type === 'swatch' ? "swatch-item" : "text-item"}`}
                 style={attribute.type === 'swatch' ? { backgroundColor: this.setHexColor(item.value) } : {}}
                 title={item.displayValue}
+                data-testid={`cart-item-attribute-${this.toKebabCase(attribute.id)}-${item.id}-${isActive ? 'selected' : ''}`}
               >
                 {attribute.type === 'text' && item.displayValue}
               </div>
@@ -54,6 +67,10 @@ class Cart extends Component {
       </div>
     ));
   };
+
+  getTotalQuantity = () => {
+    return this.props.cartItems.reduce((acc, prod) => acc + prod.quantity , 0);
+  }
 
   render() {
     const { cartItems, visibility, toggleCartVisibility } = this.props;
@@ -66,10 +83,11 @@ class Cart extends Component {
             <div className="cart-header">
               <span className="cart-title">My Bag</span>
               <span className="cart-comma">, </span>
-              <span className="cart-item-count">
-                {cartItems.length === 0
-                  ? ''
-                  : `${cartItems.length} ${cartItems.length > 1 ? 'items' : 'item'}`}
+              <span className="cart-item-count" data-testid='cart-total'>
+                {`${this.getTotalQuantity() }`}
+              </span>
+              <span className="cart-item-count-sufix">
+              {`${cartItems.length > 1 ? 'items' : 'item'}`}
               </span>
             </div>
             <div className="cart-product">
@@ -90,13 +108,17 @@ class Cart extends Component {
                     <button
                       className="cart-product-button increase"
                       onClick={() => this.handleQuantityChange(product.product_id, 1)}
+                      data-testid='cart-item-amount-increase'
                     >
                       +
                     </button>
-                    <span>{product.quantity}</span>
+                    <span data-testid='cart-item-amount'>
+                      {product.quantity}
+                    </span>
                     <button
                       className="cart-product-button decrease"
                       onClick={() => this.handleQuantityChange(product.product_id, -1)}
+                      data-testid='cart-item-amount-decrease'
                     >
                       -
                     </button>
@@ -111,7 +133,9 @@ class Cart extends Component {
               <p className="cart-total">Total</p>
               <p className="cart-total-price">{this.getCurrencySymbol()}{this.calculateTotalPrice()}</p>
             </div>
-            <button className="cart-place-order">PLACE ORDER</button>
+            <button className= {`cart-place-order ${this.getTotalQuantity() < 1 ? "disabled" : "enabled"}`}
+            >PLACE ORDER
+            </button>
           </div>
         </div>
       </>

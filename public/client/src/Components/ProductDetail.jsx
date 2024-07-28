@@ -98,5 +98,5 @@ class ProductDetail extends Component {
     );
   }
 }
-//data-testid={`product-${this.toKebabCase(product.name)}`}
+
 export default ProductDetail;

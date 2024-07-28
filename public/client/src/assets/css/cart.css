@@ -54,7 +54,15 @@
     font-size: 1rem;
     font-weight: 500;
     line-height: 1.6rem;
-    text-align: right;
+}
+
+.cart-item-count-sufix{
+    color: var(--default-text-color);
+    font-family: var(--font-family-raleway);
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.6rem;
+    margin-left: 0.2rem;
 }
 
 .cart-product {
@@ -242,4 +250,7 @@
 .cart-modal {
     z-index: 1000;
 }
-  
+
+.cart-place-order.disabled{
+    background-color: grey;
+}

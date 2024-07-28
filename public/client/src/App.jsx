@@ -18,6 +18,7 @@ class App extends Component {
 
   componentDidMount() {
     window.addEventListener('popstate', this.handlePopState);
+    this.loadCartItemsFromLocalStorage();
   }
 
   componentWillUnmount() {
@@ -45,28 +46,25 @@ class App extends Component {
   //In strict mode it adds the item twice. 1 -> 3
   addToCart = (product, selectedAttributes) => {
     this.setState((prevState) => {
-      //Check if item with the same attrbiutes is present in the cart
       const existingProductIndex = prevState.cartItems.findIndex(
         (item) =>
           item.product_id === product.product_id &&
           JSON.stringify(item.selectedAttributes) === JSON.stringify(selectedAttributes)
       );
 
-      //If product exists with those attr add it to quantity
-      //else add new product
-      console.log(existingProductIndex);
+      let updatedCartItems;
       if (existingProductIndex !== -1) {
-        const updatedCartItems = [...prevState.cartItems];
+        updatedCartItems = [...prevState.cartItems];
         updatedCartItems[existingProductIndex].quantity += 1;
-        return { cartItems: updatedCartItems };
       } else {
-        return {
-          cartItems: [
-            ...prevState.cartItems,
-            { ...product, selectedAttributes, quantity: 1 },
-          ],
-        };
+        updatedCartItems = [
+          ...prevState.cartItems,
+          { ...product, selectedAttributes, quantity: 1 },
+        ];
       }
+
+      this.saveCartItemsToLocalStorage(updatedCartItems);
+      return { cartItems: updatedCartItems };
     });
   };
 
@@ -74,9 +72,7 @@ class App extends Component {
     this.setState((prevState) => {
       const updatedCartItems = prevState.cartItems
         .map((item) => {
-          if (
-            item.product_id === productId
-          ) {
+          if (item.product_id === productId) {
             const newQuantity = item.quantity + change;
             if (newQuantity > 0) {
               return { ...item, quantity: newQuantity };
@@ -88,6 +84,7 @@ class App extends Component {
         })
         .filter((item) => item !== null);
 
+      this.saveCartItemsToLocalStorage(updatedCartItems);
       return { cartItems: updatedCartItems };
     });
   };
@@ -97,6 +94,17 @@ class App extends Component {
     this.setState((prevState) => ({
       isCartVisible: !prevState.isCartVisible,
     }));
+  };
+
+  saveCartItemsToLocalStorage = (cartItems) => {
+    localStorage.setItem('cartItems', JSON.stringify(cartItems));
+  };
+
+  loadCartItemsFromLocalStorage = () => {
+    const cartItems = localStorage.getItem('cartItems');
+    if (cartItems) {
+      this.setState({ cartItems: JSON.parse(cartItems) });
+    }
   };
 
   render() {
