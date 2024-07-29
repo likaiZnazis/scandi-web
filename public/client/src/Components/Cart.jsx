@@ -134,7 +134,9 @@ class Cart extends Component {
               <p className="cart-total-price">{this.getCurrencySymbol()}{this.calculateTotalPrice()}</p>
             </div>
             <button className= {`cart-place-order ${this.getTotalQuantity() < 1 ? "disabled" : "enabled"}`}
-            >PLACE ORDER
+            // onClick={this.handlePlaceOrder}
+            >
+              PLACE ORDER
             </button>
           </div>
         </div>

@@ -3,6 +3,7 @@ namespace App\Models;
 
 use App\Entity\ClothProduct;
 use App\Entity\TechProduct;
+use App\Entity\OrderItem;
 use App\Entity\Price;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -44,7 +45,9 @@ class Product
     #[ORM\OneToMany(targetEntity: Attribute::class, mappedBy: 'product')]
     protected Collection $attributes;
 
-    //There can be only one category for a product
+    #[ORM\OneToMany(targetEntity: OrderItem::class, mappedBy: 'product')]
+    private Collection $orderItems;
+
     #[ORM\ManyToOne(targetEntity: "Category", inversedBy: "products")]
     #[ORM\JoinColumn(name: "category_id", referencedColumnName: "category_id")]
     protected Category $category;
@@ -53,6 +56,7 @@ class Product
     {
         $this->prod_prices = new ArrayCollection();
         $this->attributes = new ArrayCollection();
+        $this->orderItems = new ArrayCollection();
     }
     // Getters and setters...
 
@@ -146,6 +150,11 @@ class Product
         return $this->attributes;
     }
 
+    public function getOrderItems(): Collection
+    {
+        return $this->orderItems;
+    }
+
     public function addPrice(Price $price): void
     {
         if (!$this->prod_prices->contains($price)) {
@@ -182,4 +191,21 @@ class Product
         }
     }
 
+    public function addOrderItem(OrderItem $orderItem): void
+    {
+        if (!$this->orderItems->contains($orderItem)) {
+            $this->orderItems[] = $orderItem;
+            $orderItem->setProduct($this);
+        }
+    }
+
+    public function removeOrderItem(OrderItem $orderItem): void
+    {
+        if ($this->orderItems->contains($orderItem)) {
+            $this->orderItems->removeElement($orderItem);
+            if ($orderItem->getProduct() === $this) {
+                $orderItem->setProduct(null);
+            }
+        }
+    }
 }

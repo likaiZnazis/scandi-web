@@ -16,6 +16,7 @@ use GraphQL\Type\SchemaConfig;
 use RuntimeException;
 use Throwable;
 use Doctrine\ORM\EntityManagerInterface;
+use GraphQL\Type\Definition\InputObjectType;
 
 class Controller {
     private $entityManager;
@@ -27,6 +28,7 @@ class Controller {
     private $priceType;
     private $categoryType;
     private $productType;
+    private $orderType;
 
     public function __construct(EntityManagerInterface $entityManager)
     {
@@ -104,7 +106,6 @@ class Controller {
                 'gallery' => Type::listOf(Type::string()),
                 'description' => Type::string(),
                 'brand' => Type::string(),
-                // 'category' => $this->categoryType,
                 'attributes' => Type::listOf($this->attributeType),
                 'prod_prices' =>[
                     'type' => Type::listOf($this->priceType),
@@ -143,7 +144,7 @@ class Controller {
                         return array_map(function ($product) use ($attributeResolver) {
                             return [
                                 'product_id' => $product->getProductId(),
-                                // 'id' => $product->getId(),
+                                'id' => $product->getId(),
                                 'name' => $product->getName(),
                                 'in_stock' =>$product->getIn_stock(),
                                 'gallery' => $product->getGallery(),
@@ -158,6 +159,21 @@ class Controller {
             ],
         ]);
 
+        $this->orderType = new ObjectType([
+            'name' => 'Order',
+            'fields' => [
+                'order_id' => Type::int(),
+                'products' => [
+                    'type' => Type::listOf($this->productType),
+                    'resolve' => function ($order) {
+                        $products = $this->entityManager->getRepository(Product::class)
+                            ->findBy(['order' => $order['order_id']]);
+                        return $products;
+                    },
+                ],
+                'total_price' => Type::float(),
+            ]
+        ]);
     }
 
     /**
@@ -211,57 +227,56 @@ class Controller {
      * Returns a product based on it's id.
      * Product detail page
      */
-    public function pdp() {
-            $queryType = new ObjectType([
-                'name' => 'Query',
-                'fields' => [
-                    'product' => [
-                        'type' => $this->productType,
-                        'args' => [
-                            'product_id' => Type::int(),
-                        ],
-                        'resolve' => function ($root, $args) {
-                            $product_id = $args['product_id'] ?? null;
+    // public function pdp() {
+    //         $queryType = new ObjectType([
+    //             'name' => 'Query',
+    //             'fields' => [
+    //                 'product' => [
+    //                     'type' => $this->productType,
+    //                     'args' => [
+    //                         'product_id' => Type::int(),
+    //                     ],
+    //                     'resolve' => function ($root, $args) {
+    //                         $product_id = $args['product_id'] ?? null;
                             
-                            // Fetch the product
-                            $product = $this->entityManager->getRepository(Product::class)
-                                ->findOneBy(['product_id' => $product_id]);
-                            if (!$product) {
-                                throw new \Exception("Product not found for ID: $product_id");
-                            }
-                            //Create a attribute resolver
-                            $attributeResolver = new AttributeResolver($this->entityManager);
+    //                         // Fetch the product
+    //                         $product = $this->entityManager->getRepository(Product::class)
+    //                             ->findOneBy(['product_id' => $product_id]);
+    //                         if (!$product) {
+    //                             throw new \Exception("Product not found for ID: $product_id");
+    //                         }
+    //                         //Create a attribute resolver
+    //                         $attributeResolver = new AttributeResolver($this->entityManager);
 
-                            // $productCategory = $product->getCategory();
-                            return [
-                                'product_id' => $product->getProductId(),
-                                'id' => $product->getId(),
-                                'name' => $product->getName(),
-                                'in_stock' => $product->getIn_stock(),
-                                'gallery' => $product->getGallery(),
-                                'description' => $product->getDescription(),
-                                'brand' => $product->getBrand(),
-                                'attributes' => $attributeResolver->resolveAttributes($product),
-                                //Don't need the category for detail page because it does not show up anywhere from the design.
-                                // 'category' => [
-                                //     'category_id' => $productCategory->getCategoryId(),
-                                //     'category_name' => $productCategory->getCategoryName(),
-                                // ],
-                                'prices' => $product->getprod_prices(),
-                            ];
-                        },
-                    ],
-                ],
-            ]);
+    //                         // $productCategory = $product->getCategory();
+    //                         return [
+    //                             'product_id' => $product->getProductId(),
+    //                             'id' => $product->getId(),
+    //                             'name' => $product->getName(),
+    //                             'in_stock' => $product->getIn_stock(),
+    //                             'gallery' => $product->getGallery(),
+    //                             'description' => $product->getDescription(),
+    //                             'brand' => $product->getBrand(),
+    //                             'attributes' => $attributeResolver->resolveAttributes($product),
+    //                             //Don't need the category for detail page because it does not show up anywhere from the design.
+    //                             // 'category' => [
+    //                             //     'category_id' => $productCategory->getCategoryId(),
+    //                             //     'category_name' => $productCategory->getCategoryName(),
+    //                             // ],
+    //                             'prices' => $product->getprod_prices(),
+    //                         ];
+    //                     },
+    //                 ],
+    //             ],
+    //         ]);
             
-            $this->handleGraphQLRequest($queryType);
-    }
+    //         $this->handleGraphQLRequest($queryType);
+    // }
 
     /**
      * Resolver for category page. 
      */
     public function mainPage() {
-        //Need to fix this, that products are showing up
         $queryType = new ObjectType([
             'name' => 'Query',
             'fields' => [
@@ -288,20 +303,58 @@ class Controller {
             ],
         ]);
 
-            // $mutationType = new ObjectType([
-            //     'name' => 'Mutation',
-            //     'fields' => [
-            //         'sum' => [
-            //             'type' => Type::int(),
-            //             'args' => [
-            //                 'x' => ['type' => Type::int()],
-            //                 'y' => ['type' => Type::int()],
-            //             ],
-            //             'resolve' => static fn ($calc, array $args): int => $args['x'] + $args['y'],
-            //         ],
-            //     ],
-            // ]);
+        $mutationType = new ObjectType([
+            'name' => 'Mutation',
+            'fields' => [
+                'placeOrder' => [
+                    'type' => $this->orderType,
+                    'args' => [
+                        'items' => Type::listOf(new InputObjectType([
+                            'name' => 'OrderItemInput',
+                            'fields' => [
+                                'product_id' => Type::nonNull(Type::int()),
+                                'quantity' => Type::nonNull(Type::int()),
+                                'selectedAttributes' => Type::listOf(new InputObjectType([
+                                    'name' => 'SelectedAttributeInput',
+                                    'fields' => [
+                                        'attribute_id' => Type::nonNull(Type::int()),
+                                        'value' => Type::nonNull(Type::string()),
+                                    ],
+                                ])),
+                            ],
+                        ])),
+                        'total_price' => Type::nonNull(Type::float()),
+                    ],
+                    'resolve' => function ($root, $args) {
+                        $order = new Order();
+                        $order->setTotalPrice($args['total_price']);
         
-            $this->handleGraphQLRequest($queryType);
+                        $orderItems = [];
+                        foreach ($args['items'] as $item) {
+                            $product = $this->entityManager->getRepository(Product::class)
+                                ->find($item['product_id']);
+                            if (!$product) {
+                                throw new \Exception("Product not found for ID: {$item['product_id']}");
+                            }
+        
+                            $orderItem = new OrderItem();
+                            $orderItem->setProduct($product);
+                            $orderItem->setQuantity($item['quantity']);
+                            $orderItem->setSelectedAttributes($item['selectedAttributes']);
+        
+                            $orderItems[] = $orderItem;
+                        }
+        
+                        $order->setItems($orderItems);
+                        $this->entityManager->persist($order);
+                        $this->entityManager->flush();
+        
+                        return $order;
+                    },
+                ],
+            ],
+        ]);
+        
+        $this->handleGraphQLRequest($queryType);
     }
 }

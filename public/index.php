@@ -17,7 +17,7 @@ $graphQLController = new Controller($entityManager);
 // Routes
 $dispatcher = FastRoute\simpleDispatcher(function(FastRoute\RouteCollector $r) use ($graphQLController) {
     $r->addRoute(['POST','OPTIONS'],'/category/{category_name}', [$graphQLController, 'mainPage']);
-    $r->post('/category/{category_name}/{product_id}', [$graphQLController, 'pdp']);
+    // $r->post('/category/{category_name}/{product_id}', [$graphQLController, 'pdp']);
 });
 
 $routeInfo = $dispatcher->dispatch(
