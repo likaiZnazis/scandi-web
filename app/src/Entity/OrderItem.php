@@ -1,7 +1,6 @@
 <?php
 namespace App\Entity;
 
-
 use App\Models\Product;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -28,9 +27,9 @@ class OrderItem
     #[ORM\Column(type: 'json')]
     private array $selectedAttributes;
 
-    public function getId(): int
+    public function getOrderItemId(): int
     {
-        return $this->$order_item_id;
+        return $this->order_item_id;
     }
 
     public function getOrder(): Order

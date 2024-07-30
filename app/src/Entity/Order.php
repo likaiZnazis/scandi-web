@@ -1,13 +1,12 @@
 <?php
 namespace App\Entity;
 
-
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 
 #[ORM\Entity]
-#[ORM\Table(name: 'order')]
+#[ORM\Table(name: 'orders')]
 class Order
 {
     #[ORM\Id]
@@ -18,7 +17,6 @@ class Order
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
     private float $total_price;
 
-    /** @var Collection<int, OrderItem> */
     #[ORM\OneToMany(targetEntity: OrderItem::class, mappedBy: 'order', cascade: ['persist'])]
     private Collection $items;
 

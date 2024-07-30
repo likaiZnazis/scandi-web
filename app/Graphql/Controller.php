@@ -7,6 +7,8 @@ use App\Entity\Currency;
 use App\Models\Category;
 use App\Models\Product;
 use App\Entity\Item;
+use App\Entity\Order;
+use App\Entity\OrderItem;
 use App\Models\Attribute;
 use GraphQL\GraphQL as GraphQLBase;
 use GraphQL\Type\Definition\ObjectType;
@@ -17,6 +19,7 @@ use RuntimeException;
 use Throwable;
 use Doctrine\ORM\EntityManagerInterface;
 use GraphQL\Type\Definition\InputObjectType;
+use GraphQL\Type\Definition\ResolveInfo;
 
 class Controller {
     private $entityManager;
@@ -29,6 +32,9 @@ class Controller {
     private $categoryType;
     private $productType;
     private $orderType;
+    private $orderItemType;
+    private $orderItemInputType;
+    private $orderInputType;
 
     public function __construct(EntityManagerInterface $entityManager)
     {
@@ -159,120 +165,100 @@ class Controller {
             ],
         ]);
 
+        //Objec types create the mutation type
+        $this->orderItemType = new ObjectType([
+            'name' => 'OrderItem',
+            'fields' => [
+                'order_item_id' => Type::nonNull(Type::int()),
+                'product_id' => Type::nonNull(Type::int()),
+                'quantity' => Type::nonNull(Type::int()),
+                'selectedAttributes' => Type::listOf(Type::string()),
+            ],
+        ]);
+    
         $this->orderType = new ObjectType([
             'name' => 'Order',
             'fields' => [
-                'order_id' => Type::int(),
-                'products' => [
-                    'type' => Type::listOf($this->productType),
-                    'resolve' => function ($order) {
-                        $products = $this->entityManager->getRepository(Product::class)
-                            ->findBy(['order' => $order['order_id']]);
-                        return $products;
-                    },
-                ],
-                'total_price' => Type::float(),
-            ]
+                'order_id' => Type::nonNull(Type::int()),
+                'total_price' => Type::nonNull(Type::float()),
+                'items' => Type::nonNull(Type::listOf($this->orderItemType)),
+            ],
+        ]);
+    
+        //Input types for the object types
+        $this->orderItemInputType = new InputObjectType([
+            'name' => 'OrderItemInput',
+            'fields' => [
+                'product_id' => Type::nonNull(Type::int()),
+                'quantity' => Type::nonNull(Type::int()),
+            ],
+        ]);
+    
+        $this->orderInputType = new InputObjectType([
+            'name' => 'OrderInput',
+            'fields' => [
+                'total_price' => Type::nonNull(Type::float()),
+                'items' => Type::nonNull(Type::listOf($this->orderItemInputType)),
+            ],
         ]);
     }
 
     /**
      * Function for handling graphql requests
      */
-    private function handleGraphQLRequest($queryType)
+    private function handleGraphQLRequest($queryType, $mutationType)
     {
         try {
             $schema = new Schema(
                 (new SchemaConfig())
                     ->setQuery($queryType)
+                    ->setMutation($mutationType)
             );
-
+    
             $rawInput = file_get_contents('php://input');
             if ($rawInput === false) {
                 throw new RuntimeException('Failed to get php://input');
             }
-
+    
             if (empty($rawInput)) {
                 throw new RuntimeException('Empty query input');
             }
-
+    
             $input = json_decode($rawInput, true);
             if (json_last_error() !== JSON_ERROR_NONE) {
                 throw new RuntimeException('Invalid JSON input: ' . json_last_error_msg());
             }
-
+    
             $query = $input['query'] ?? null;
             if ($query === null) {
                 throw new RuntimeException('Query not provided');
             }
-
+    
             $variableValues = $input['variables'] ?? null;
-
-            $result = GraphQLBase::executeQuery($schema, $query, null, null, $variableValues);
+    
+            $result = GraphQLBase::executeQuery($schema, $query, null, ['entityManager' => $this->entityManager], $variableValues);
             $output = $result->toArray();
         } catch (Throwable $e) {
+            error_log($e->getMessage());
+            error_log($e->getFile() . ':' . $e->getLine());
+            error_log($e->getTraceAsString());
+    
             $output = [
-                'error' => [
-                    'message' => $e->getMessage(),
+                'errors' => [
+                    [
+                        'message' => $e->getMessage(),
+                        'file' => $e->getFile(),
+                        'line' => $e->getLine(),
+                        'trace' => $e->getTraceAsString(),
+                    ],
                 ],
             ];
         }
-
+    
         header('Content-Type: application/json; charset=UTF-8');
         echo json_encode($output);
     }
-
-    /**
-     * Resolver for a single product.
-     * Returns a product based on it's id.
-     * Product detail page
-     */
-    // public function pdp() {
-    //         $queryType = new ObjectType([
-    //             'name' => 'Query',
-    //             'fields' => [
-    //                 'product' => [
-    //                     'type' => $this->productType,
-    //                     'args' => [
-    //                         'product_id' => Type::int(),
-    //                     ],
-    //                     'resolve' => function ($root, $args) {
-    //                         $product_id = $args['product_id'] ?? null;
-                            
-    //                         // Fetch the product
-    //                         $product = $this->entityManager->getRepository(Product::class)
-    //                             ->findOneBy(['product_id' => $product_id]);
-    //                         if (!$product) {
-    //                             throw new \Exception("Product not found for ID: $product_id");
-    //                         }
-    //                         //Create a attribute resolver
-    //                         $attributeResolver = new AttributeResolver($this->entityManager);
-
-    //                         // $productCategory = $product->getCategory();
-    //                         return [
-    //                             'product_id' => $product->getProductId(),
-    //                             'id' => $product->getId(),
-    //                             'name' => $product->getName(),
-    //                             'in_stock' => $product->getIn_stock(),
-    //                             'gallery' => $product->getGallery(),
-    //                             'description' => $product->getDescription(),
-    //                             'brand' => $product->getBrand(),
-    //                             'attributes' => $attributeResolver->resolveAttributes($product),
-    //                             //Don't need the category for detail page because it does not show up anywhere from the design.
-    //                             // 'category' => [
-    //                             //     'category_id' => $productCategory->getCategoryId(),
-    //                             //     'category_name' => $productCategory->getCategoryName(),
-    //                             // ],
-    //                             'prices' => $product->getprod_prices(),
-    //                         ];
-    //                     },
-    //                 ],
-    //             ],
-    //         ]);
-            
-    //         $this->handleGraphQLRequest($queryType);
-    // }
-
+    
     /**
      * Resolver for category page. 
      */
@@ -287,8 +273,6 @@ class Controller {
                     ],
                     'resolve' => function ($root, $args) {
                         $categoryName = $args['category_name'] ?? null;
-        
-                        // Fetch the category based on the name
                         $category = $this->entityManager->getRepository(Category::class)
                             ->findOneBy(['category_name' => $categoryName]);
                         if (!$category) {
@@ -306,55 +290,51 @@ class Controller {
         $mutationType = new ObjectType([
             'name' => 'Mutation',
             'fields' => [
-                'placeOrder' => [
+                'createOrder' => [
                     'type' => $this->orderType,
                     'args' => [
-                        'items' => Type::listOf(new InputObjectType([
-                            'name' => 'OrderItemInput',
-                            'fields' => [
-                                'product_id' => Type::nonNull(Type::int()),
-                                'quantity' => Type::nonNull(Type::int()),
-                                'selectedAttributes' => Type::listOf(new InputObjectType([
-                                    'name' => 'SelectedAttributeInput',
-                                    'fields' => [
-                                        'attribute_id' => Type::nonNull(Type::int()),
-                                        'value' => Type::nonNull(Type::string()),
-                                    ],
-                                ])),
-                            ],
-                        ])),
-                        'total_price' => Type::nonNull(Type::float()),
+                        'input' => Type::nonNull($this->orderInputType),
                     ],
-                    'resolve' => function ($root, $args) {
+                    'resolve' => function($root, $args) {
                         $order = new Order();
-                        $order->setTotalPrice($args['total_price']);
-        
-                        $orderItems = [];
-                        foreach ($args['items'] as $item) {
-                            $product = $this->entityManager->getRepository(Product::class)
-                                ->find($item['product_id']);
+                        $order->setTotalPrice($args['input']['total_price']);
+    
+                        foreach ($args['input']['items'] as $itemData) {
+                            $product = $this->entityManager->getRepository(Product::class)->find($itemData['product_id']);
+                            
                             if (!$product) {
-                                throw new \Exception("Product not found for ID: {$item['product_id']}");
+                                throw new \GraphQL\Error\UserError("Product with ID {$itemData['product_id']} not found.");
                             }
-        
+    
                             $orderItem = new OrderItem();
                             $orderItem->setProduct($product);
-                            $orderItem->setQuantity($item['quantity']);
-                            $orderItem->setSelectedAttributes($item['selectedAttributes']);
-        
-                            $orderItems[] = $orderItem;
+                            $orderItem->setQuantity($itemData['quantity']);
+                            
+                            $orderItem->setSelectedAttributes([]);
+                            $this->entityManager->persist($orderItem);
+                            $order->addItem($orderItem);
                         }
-        
-                        $order->setItems($orderItems);
+    
                         $this->entityManager->persist($order);
                         $this->entityManager->flush();
-        
-                        return $order;
+                        
+                        //Returns info
+                        return [
+                            'order_id' => $order->getOrderId(),
+                            'total_price' => $order->getTotalPrice(),
+                            'items' => array_map(function($item) {
+                                return [
+                                    'order_item_id' => $item->getOrderItemId(),
+                                    'product_id' => $item->getProduct()->getProductId(),
+                                    'quantity' => $item->getQuantity(),
+                                    'selectedAttributes' => $item->getSelectedAttributes(),
+                                ];
+                            }, $order->getItems()->toArray()),
+                        ];
                     },
                 ],
             ],
         ]);
-        
-        $this->handleGraphQLRequest($queryType);
+        $this->handleGraphQLRequest($queryType, $mutationType);
     }
 }
