@@ -75,17 +75,40 @@
     font-weight: var(--font-weight-semi-strong);
     line-height: 1.2rem;
     padding: 1rem 2rem;
+    min-width: 300px;
     width: 50%;
     cursor: pointer;
 }
 
-.product-detail-description{
+.product-detail-description {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+    text-overflow: ellipsis;
     margin: 2.5rem 0 0 0;
     color: black;
     font-family: var(--font-family-roboto);
     font-size: var(--font-size-light);
     font-weight: var(--font-weight-light);
     line-height: 1.6rem;
+}
+
+.product-detail-description.expanded {
+    display: block;
+    -webkit-line-clamp: unset;
+    height: auto;
+}
+
+.toggle-description-button {
+    cursor: pointer;
+    color: #5ECE7B;
+    font-family: var(--font-family-roboto);
+    font-size: var(--font-size-light);
+    font-weight: var(--font-weight-semi-strong);
+    line-height: 1.2rem;
+    border: none;
+    background: none;
 }
 
 .grid-carousel{

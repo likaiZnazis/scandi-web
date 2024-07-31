@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import '../assets/css/cart.css';
+import { parseJsonBody } from "@apollo/client/link/http/parseAndCheckHttpResponse";
 
 class Cart extends Component {  
 
@@ -68,6 +69,28 @@ class Cart extends Component {
     ));
   };
 
+  handlePlaceOrder = () => {
+    const cart = this.props.cartItems;
+    console.log(cart[0].selectedAttributes);
+    const orderItems = cart.map((item) => {
+      const attributes = Object.entries(item.selectedAttributes).map(([id, value]) => `${id}:${value}`);
+
+      return {
+          product_id: Number(item.product_id),
+          quantity: Number(item.quantity),
+          selectedAttributes: attributes
+      };
+  });
+
+    console.log(orderItems.selectedAttributes);
+    const order = {
+      items: orderItems,
+      total_price: parseFloat(this.calculateTotalPrice()),
+    }
+
+    this.props.placeOrder(order);
+  }
+
   getTotalQuantity = () => {
     return this.props.cartItems.reduce((acc, prod) => acc + prod.quantity , 0);
   }
@@ -134,7 +157,8 @@ class Cart extends Component {
               <p className="cart-total-price">{this.getCurrencySymbol()}{this.calculateTotalPrice()}</p>
             </div>
             <button className= {`cart-place-order ${this.getTotalQuantity() < 1 ? "disabled" : "enabled"}`}
-            // onClick={this.handlePlaceOrder}
+            onClick={this.handlePlaceOrder}
+            disabled={this.getTotalQuantity() < 1}
             >
               PLACE ORDER
             </button>

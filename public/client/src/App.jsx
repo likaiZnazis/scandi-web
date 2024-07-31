@@ -1,5 +1,7 @@
 // App.js
 import React, { Component } from 'react';
+import { gql } from '@apollo/client';
+import client from './Client/ApolloClientSetup';
 import Header from './Components/Header';
 import DisplayProducts from './Components/DisplayProducts';
 import ProductDetail from './Components/ProductDetail';
@@ -64,6 +66,7 @@ class App extends Component {
       }
 
       this.saveCartItemsToLocalStorage(updatedCartItems);
+      this.state.isCartVisible = true;
       return { cartItems: updatedCartItems };
     });
   };
@@ -89,6 +92,35 @@ class App extends Component {
     });
   };
 
+  placeOrder = async (orderData) => {
+    const PLACE_ORDER_MUTATION = gql`
+      mutation CreateOrder($input: OrderInput!) {
+        createOrder(input: $input) {
+          order_id
+          total_price
+          items {
+            order_item_id
+            product_id
+            quantity
+            selectedAttributes
+          }
+        }
+      }
+    `;
+    try {
+      const { data } = await client.mutate({
+        mutation: PLACE_ORDER_MUTATION,
+        variables: { input: orderData },
+      });
+
+      console.log('Order placed:', data.createOrder);
+      //reset
+      this.setState({ cartItems: [] });
+      this.saveCartItemsToLocalStorage([]);
+    } catch (error) {
+      console.error('Error placing order:', error);
+    }
+  };
 
   toggleCartVisibility = () => {
     this.setState((prevState) => ({
@@ -132,6 +164,7 @@ class App extends Component {
           visibility={isCartVisible} 
           toggleCartVisibility={this.toggleCartVisibility}
           updateQuantity={this.updateQuantity}
+          placeOrder={this.placeOrder}
         />
       </div>
     );

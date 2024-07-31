@@ -191,6 +191,7 @@ class Controller {
             'fields' => [
                 'product_id' => Type::nonNull(Type::int()),
                 'quantity' => Type::nonNull(Type::int()),
+                'selectedAttributes' => Type::listOf(Type::string()),
             ],
         ]);
     
@@ -310,7 +311,7 @@ class Controller {
                             $orderItem->setProduct($product);
                             $orderItem->setQuantity($itemData['quantity']);
                             
-                            $orderItem->setSelectedAttributes([]);
+                            $orderItem->setSelectedAttributes($itemData['selectedAttributes']);
                             $this->entityManager->persist($orderItem);
                             $order->addItem($orderItem);
                         }
