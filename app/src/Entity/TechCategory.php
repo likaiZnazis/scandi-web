@@ -10,6 +10,6 @@ class TechCategory extends Category
     public function __construct()
     {
         parent::__construct();
-        $this->setCategory('tech');
+        $this->setCategoryName('tech');
     }
 }

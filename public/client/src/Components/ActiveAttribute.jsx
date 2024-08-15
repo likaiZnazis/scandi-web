@@ -50,7 +50,7 @@ class ActiveAttribute extends Component {
                 title={item.displayValue}
                 onClick={() => this.handleAttributeSelect(item.value)}
               >
-                {attribute.type === 'text' && item.displayValue}
+                {attribute.type === 'text' && item.value}
               </div>
             );
           })}

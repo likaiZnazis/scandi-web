@@ -10,6 +10,6 @@ class ClothCategory extends Category
     public function __construct()
     {
         parent::__construct();
-        $this->setCategory('clothes');
+        $this->setCategoryName('clothes');
     }
 }

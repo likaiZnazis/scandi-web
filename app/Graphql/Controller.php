@@ -100,8 +100,6 @@ class Controller {
             ],
         ]);
 
-
-
         $this->productType = new ObjectType([
             'name' => 'Product',
             'fields' => [
@@ -129,8 +127,8 @@ class Controller {
                                         'symbol' => $priceCurrency->getSymbol(),
                                     ],
                                 ];
-                            }, $prices);
-                        }
+                        }, $prices);
+                    }
                 ] 
             ],
         ]);
@@ -285,6 +283,27 @@ class Controller {
                         ];
                     },
                 ],
+                'allProducts' => [
+                    'type' => Type::listOf($this->productType),
+                    'resolve' => function (){
+                        $products = $this->entityManager->getRepository(Product::class)->findAll();
+                        $attributeResolver = new AttributeResolver($this->entityManager);
+                        return array_map(function ($product) use ($attributeResolver) 
+                        {
+                            return [
+                                'product_id' => $product->getProductId(),
+                                'id' => $product->getId(),
+                                'name' => $product->getName(),
+                                'in_stock' =>$product->getIn_stock(),
+                                'gallery' => $product->getGallery(),
+                                'description' => $product->getDescription(),
+                                'brand' => $product->getBrand(),
+                                'attributes' => $attributeResolver->resolveAttributes($product),
+                                'prices'=> $product->getprod_prices()
+                            ];
+                        }, $products);
+                    }
+                ]
             ],
         ]);
 

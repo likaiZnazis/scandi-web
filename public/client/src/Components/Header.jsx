@@ -29,6 +29,13 @@ class Header extends Component {
               >
                 Tech
               </li>
+              <li
+                data-testid={activeCategory === 'all' ? 'active-category-link' : 'category-link'}
+                className={activeCategory === 'all' ? 'active' : ''}
+                onClick={() => onSelectCategory('all')}
+              >
+                All
+              </li>
             </ul>
           </nav>
           <img src={Logo} alt="Logo" />

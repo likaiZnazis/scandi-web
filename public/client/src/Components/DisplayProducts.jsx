@@ -15,14 +15,16 @@ const GET_PRODUCTS = gql`
         description
         attributes {
           attribute_id
-          id 
+          id
           items {
             item_id
             displayValue
             value
-            id }
+            id
+          }
           name
-          type } 
+          type
+        }
         prod_prices {
           amount
           currency {
@@ -34,19 +36,51 @@ const GET_PRODUCTS = gql`
   }
 `;
 
+const GET_ALL_PRODUCTS = gql`
+  query GetAllProducts {
+    allProducts {
+      product_id
+      id
+      name
+      gallery
+      in_stock
+      description
+      brand
+      attributes {
+        attribute_id
+        id
+        name
+        type
+        items {
+          item_id
+          displayValue
+          value
+          id
+        }
+      }
+      prod_prices {
+        amount
+        currency {
+          symbol
+        }
+      }
+    }
+  }
+`;
+
 class DisplayProducts extends Component {
   capitalizeFirstLetter = (string) => {
     return string.charAt(0).toUpperCase() + string.slice(1);
   }
 
-  //Need to return the first 
-  selectFirstAttribute = (product) =>{
+  // Get default selected attribute for a product
+  selectFirstAttribute = (product) => {
     const arrayAttributes = product.attributes.map((attribute) => [attribute.id, attribute.items[0].value]);
     return Object.fromEntries(arrayAttributes);
   }
 
   handleCartClick = (product) => {
-    this.props.addToCart(product,this.selectFirstAttribute(product));
+    this.props.addToCart(product, this.selectFirstAttribute(product));
   };
 
   toKebabCase = (str) => {
@@ -63,17 +97,25 @@ class DisplayProducts extends Component {
     const { categoryName, onSelectProduct } = this.props;
     const capitalizedCategoryName = this.capitalizeFirstLetter(categoryName);
 
+    // Select the query based on categoryName
+    const queryToUse = categoryName === 'all' ? GET_ALL_PRODUCTS : GET_PRODUCTS;
+
     return (
-      <Query query={GET_PRODUCTS} variables={{ categoryName }}>
+      <Query query={queryToUse} variables={categoryName !== 'all' ? { categoryName } : {}}>
         {({ loading, error, data }) => {
           if (loading) return <p>Loading...</p>;
           if (error) return <p>Error: {error.message}</p>;
+
+          // Extract products based on the query result
+          const products = categoryName === 'all'
+            ? data.allProducts
+            : data.category.products;
 
           return (
             <div>
               <h1 className='category-name'>{capitalizedCategoryName}</h1>
               <div className='grid-container'>
-                {data.category.products.map((product) => (
+                {products.map((product) => (
                   <div
                     className={`grid-product ${!product.in_stock ? 'product-out-of-stock' : ''}`}
                     key={product.product_id}

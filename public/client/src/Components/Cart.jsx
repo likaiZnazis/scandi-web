@@ -18,7 +18,7 @@ class Cart extends Component {
     }, 0).toFixed(2);
   };
 
-  //rewrite
+
   getCurrencySymbol = () => {
     const { cartItems } = this.props;
     if (cartItems.length > 0) {
