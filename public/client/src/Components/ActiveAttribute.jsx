@@ -49,6 +49,7 @@ class ActiveAttribute extends Component {
                 style={attribute.type === 'swatch' ? { backgroundColor: this.setHexColor(item.value) } : {}}
                 title={item.displayValue}
                 onClick={() => this.handleAttributeSelect(item.value)}
+                data-testid={`product-attribute-color-${this.toKebabCase(attribute.id)}-${item.id}`}
               >
                 {attribute.type === 'text' && item.value}
               </div>

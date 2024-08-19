@@ -63,9 +63,15 @@ li{
   font-size: 1rem;
 }
 
-li.active{
+a {
+  color: var(--default-text-color);
+  text-decoration: none;
+}
+
+a.active{
   color: var(--active-text-color);
   border-bottom: 2px solid var(--active-text-color);
+  padding-bottom: 20px;
   font-weight: 600;
 }
 

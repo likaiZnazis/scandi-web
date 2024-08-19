@@ -55,10 +55,11 @@ class Cart extends Component {
                 key={item.id}
                 className={`cart-attribute-item 
                 ${isActive ? 'active' : ''}
+                ${isActive ? 'selected' : ''}
                 cart-${attribute.type === 'swatch' ? "swatch-item" : "text-item"}`}
                 style={attribute.type === 'swatch' ? { backgroundColor: this.setHexColor(item.value) } : {}}
                 title={item.displayValue}
-                data-testid={`cart-item-attribute-${this.toKebabCase(attribute.id)}-${item.id}-${isActive ? 'selected' : ''}`}
+                data-testid={`product-attribute-${this.toKebabCase(attribute.id)}-${item.id}`}
               >
                 {attribute.type === 'text' && item.displayValue}
               </div>
@@ -100,7 +101,7 @@ class Cart extends Component {
 
     return (
       <>
-        {visibility && <div className="overlay" onClick={toggleCartVisibility}></div>}
+        {visibility && <div className="overlay" data-testid = "cart-overlay" onClick={toggleCartVisibility}></div>}
         <div className="cart-modal" style={{ display: visibility ? "block" : "none" }}>
           <div className="cart">
             <div className="cart-header">
@@ -115,7 +116,7 @@ class Cart extends Component {
             </div>
             <div className="cart-product">
               {cartItems.map((product, index) => (
-                <div key={index} className="cart-product-row">
+                <div key={index} className="cart-product-row" data-testid={`product-${this.toKebabCase(product.name)}`}>
                   <div className="cart-product-detail">
                     <h4 className="cart-product-title">{product.name}</h4>
                     <div className="cart-product-price">

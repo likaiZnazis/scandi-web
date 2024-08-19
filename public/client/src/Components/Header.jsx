@@ -16,25 +16,27 @@ class Header extends Component {
           <nav>
             <ul>
               <li
-                data-testid={activeCategory === 'clothes' ? 'active-category-link' : 'category-link'}
-                className={activeCategory === 'clothes' ? 'active' : ''}
                 onClick={() => onSelectCategory('clothes')}
               >
-                Clothes
+                <a
+                className={activeCategory === 'clothes' ? 'active' : ''}
+                data-testid={activeCategory === 'clothes' ? 'active-category-link' : 'category-link'}
+                href="/clothes">Clothes</a>
               </li>
               <li
-                data-testid={activeCategory === 'tech' ? 'active-category-link' : 'category-link'}
-                className={activeCategory === 'tech' ? 'active' : ''}
                 onClick={() => onSelectCategory('tech')}
               >
-                Tech
+                <a
+                className={activeCategory === 'tech' ? 'active' : ''} 
+                data-testid={activeCategory === 'tech' ? 'active-category-link' : 'category-link'}
+                href="/tech">Tech</a>
               </li>
               <li
-                data-testid={activeCategory === 'all' ? 'active-category-link' : 'category-link'}
-                className={activeCategory === 'all' ? 'active' : ''}
                 onClick={() => onSelectCategory('all')}
               >
-                All
+                <a data-testid={activeCategory === 'all' ? 'active-category-link' : 'category-link'}
+                href="/all"
+                className={activeCategory === 'all' ? 'active' : ''}>All</a>
               </li>
             </ul>
           </nav>

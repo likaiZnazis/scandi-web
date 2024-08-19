@@ -1,4 +1,3 @@
-// App.js
 import React, { Component } from 'react';
 import { gql } from '@apollo/client';
 import client from './Client/ApolloClientSetup';
@@ -21,6 +20,7 @@ class App extends Component {
   componentDidMount() {
     window.addEventListener('popstate', this.handlePopState);
     this.loadCartItemsFromLocalStorage();
+    this.updateCategoryFromUrl();
   }
 
   componentWillUnmount() {
@@ -28,6 +28,7 @@ class App extends Component {
   }
 
   handlePopState = (event) => {
+    this.updateCategoryFromUrl();
     if (event.state && event.state.selectedProduct) {
       this.setState({ selectedProduct: event.state.selectedProduct });
     } else {
@@ -35,9 +36,15 @@ class App extends Component {
     }
   };
 
+  updateCategoryFromUrl = () => {
+    const path = window.location.pathname;
+    const category = path === '/' ? 'clothes' : path.substring(1);
+    this.setState({ selectedCategory: category });
+  };
+
   setSelectedCategory = (category) => {
     this.setState({ selectedCategory: category, selectedProduct: null });
-    window.history.pushState({}, '', window.location.pathname);
+    window.history.pushState({}, '', `/${category}`);
   };
 
   selectProduct = (product) => {
@@ -45,7 +52,7 @@ class App extends Component {
     window.history.pushState({ selectedProduct: product }, '', `?product=${product.product_id}`);
   };
 
-  //In strict mode it adds the item twice. 1 -> 3
+  // In strict mode it adds the item twice. 1 -> 3
   addToCart = (product, selectedAttributes) => {
     this.setState((prevState) => {
       const existingProductIndex = prevState.cartItems.findIndex(
@@ -114,7 +121,7 @@ class App extends Component {
       });
 
       console.log('Order placed:', data.createOrder);
-      //reset
+      // reset
       this.setState({ cartItems: [] });
       this.saveCartItemsToLocalStorage([]);
     } catch (error) {
@@ -151,12 +158,12 @@ class App extends Component {
           toggleCartVisibility={this.toggleCartVisibility}
         />
         {selectedProduct ? (
-          <ProductDetail product={selectedProduct}  addToCart = {this.addToCart}/>
+          <ProductDetail product={selectedProduct} addToCart={this.addToCart} />
         ) : (
           <DisplayProducts 
             categoryName={selectedCategory} 
             onSelectProduct={this.selectProduct}
-            addToCart = {this.addToCart}
+            addToCart={this.addToCart}
           />
         )}
         <Cart 
