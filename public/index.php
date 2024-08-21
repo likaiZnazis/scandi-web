@@ -14,7 +14,7 @@ header("Access-Control-Allow-Headers: *");
 $graphQLController = new Controller($entityManager);
 
 $dispatcher = FastRoute\simpleDispatcher(function(FastRoute\RouteCollector $r) use ($graphQLController) {
-    $r->addRoute(['POST', 'OPTIONS'],'/category/{category_name}', [$graphQLController, 'mainPage']);
+    $r->addRoute(['POST', 'OPTIONS'], '/graphql', [$graphQLController, 'mainPage']);
 });
 
 $routeInfo = $dispatcher->dispatch(
